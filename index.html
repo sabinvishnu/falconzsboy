@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FALCONZ BOY — Photography</title>
+<meta name="description" content="Sabin Vishnu — Photography portfolio.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,700;1,700&family=Inter:wght@300;400;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#05070c;
+  --text:#e8ecef;--muted:rgba(232,236,239,.45);
+  --accent:#d4af37;
+  --eout:cubic-bezier(.16,1,.3,1)
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-weight:300;overflow-x:hidden;cursor:none}
+
+/* CURSOR */
+.c-dot{position:fixed;width:7px;height:7px;background:var(--accent);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .08s}
+.c-ring{position:fixed;width:34px;height:34px;border:1px solid rgba(212,175,55,.45);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .35s var(--eout),height .35s var(--eout),border-color .35s,background .35s}
+
+/* LOADER */
+.ldr{position:fixed;inset:0;z-index:10000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .6s,visibility .6s}
+.ldr.gone{opacity:0;visibility:hidden;pointer-events:none}
+.ldr-txt{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.4em;text-transform:uppercase;color:var(--muted)}
+.ldr-track{width:110px;height:1px;background:rgba(255,255,255,.09);position:relative;overflow:hidden}
+.ldr-fill{position:absolute;top:0;left:0;height:100%;background:var(--accent);width:0;transition:width .4s var(--eout)}
+
+/* HERO */
+.hero{height:100vh;min-height:600px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:0 24px;background:var(--bg)}
+.h-title{font-family:'Inter',sans-serif;font-size:clamp(4.2rem,15vw,13.5rem);font-weight:900;line-height:.88;letter-spacing:-.04em;text-transform:uppercase;color:#fff;opacity:0;transform:translateY(30px);animation:fu 1.2s var(--eout) .4s forwards;text-shadow:0 20px 80px rgba(0,0,0,.8)}
+
+/* Scroll Indicator */
+.h-scroll{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0;animation:fi 1s ease 1.4s forwards;z-index:2}
+.h-scroll-line{width:1px;height:44px;background:linear-gradient(to bottom,transparent,var(--accent));animation:sl 2.2s ease-in-out infinite}
+.h-scroll-txt{font-family:'Space Mono',monospace;font-size:.54rem;letter-spacing:.28em;color:rgba(232,236,239,.4);text-transform:uppercase;writing-mode:vertical-lr}
+@keyframes sl{0%,100%{transform:scaleY(0);transform-origin:top;opacity:0}35%{transform:scaleY(1);transform-origin:top;opacity:1}65%{transform:scaleY(1);transform-origin:bottom;opacity:1}99%{transform:scaleY(0);transform-origin:bottom;opacity:0}}
+
+/* ══ ABOUT SECTION ══ */
+.about{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  overflow:hidden;
+}
+
+.about-right{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  padding:80px 40px;
+  opacity:0;
+  transform:translateY(40px);
+  transition:opacity 1s var(--eout),transform 1s var(--eout);
+}
+.about-right.vis{
+  opacity:1;
+  transform:translateY(0);
+}
+.about-inner{
+  max-width:640px;
+  width:100%;
+  text-align:center;
+}
+.about-eyebrow{
+  font-family:'Space Mono',monospace;
+  font-size:.58rem;
+  letter-spacing:.4em;
+  text-transform:uppercase;
+  color:var(--accent);
+  margin-bottom:28px;
+  justify-content:center;
+}
+.about-heading{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2.6rem,4.5vw,4.2rem);
+  font-weight:700;
+  font-style:italic;
+  line-height:.95;
+  color:#fff;
+  margin-bottom:8px;
+}
+.about-heading span{
+  display:block;
+  font-style:normal;
+  font-weight:300;
+  font-size:clamp(1.1rem,2vw,1.6rem);
+  letter-spacing:.06em;
+  color:var(--accent);
+  margin-top:10px;
+}
+
+.about-quote{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.1rem;
+  font-style:italic;
+  color:rgba(212,175,55,.8);
+  line-height:1.75;
+  margin-bottom:32px;
+}
+.about-body{
+  font-size:.88rem;
+  line-height:2;
+  color:var(--muted);
+}
+.about-body p+p{margin-top:16px}
+.about-cta{
+  display:inline-flex;
+  align-items:center;
+  gap:12px;
+  margin-top:40px;
+  padding:14px 30px;
+  border:1px solid var(--accent);
+  border-radius:2px;
+  font-family:'Space Mono',monospace;
+  font-size:.58rem;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:var(--accent);
+  text-decoration:none;
+  cursor:none;
+  position:relative;
+  overflow:hidden;
+  transition:color .4s ease;
+}
+.about-cta::before{
+  content:'';position:absolute;inset:0;
+  background:var(--accent);
+  transform:translateX(-101%);
+  transition:transform .45s var(--eout);
+}
+.about-cta:hover::before{transform:translateX(0)}
+.about-cta:hover{color:#05070c}
+.about-cta-txt,.about-cta-arr{position:relative;z-index:1}
+.about-cta-arr{transition:transform .3s var(--eout)}
+.about-cta:hover .about-cta-arr{transform:translateX(5px)}
+
+/* PROGRESS BAR */
+.prog{position:fixed;top:0;left:0;height:1px;background:var(--accent);z-index:9997;width:0;transition:width .05s linear}
+
+@keyframes fu{to{opacity:1;transform:translateY(0)}}
+@keyframes fi{to{opacity:1}}
+
+@media(max-width:800px){
+  .about{grid-template-columns:1fr;min-height:auto}
+  .about-left{display:none}
+  .about-right{padding:72px 28px;opacity:1;transform:none}
+}
+
+/* ══ GALLERY & 3D CAROUSEL ══ */
+.gallery-section{
+  padding:120px 0 100px;
+  background:var(--bg);
+  perspective:1200px;
+  position:relative;
+}
+.gallery-hdr{
+  max-width:1400px;margin:0 auto;
+  padding:0 48px 48px;
+  display:flex;align-items:center;gap:24px;
+}
+.gallery-hdr-lbl{
+  font-family:'Space Mono',monospace;
+  font-size:.6rem;letter-spacing:.35em;
+  text-transform:uppercase;color:var(--accent);
+  white-space:nowrap;
+}
+.gallery-hdr-line{
+  flex:1;height:1px;
+  background:rgba(255,255,255,.08);
+}
+.g-view-mode{
+  display:flex;
+  gap:4px;
+  background:rgba(255,255,255,.04);
+  padding:3px;
+  border-radius:20px;
+  border:1px solid rgba(255,255,255,.08);
+}
+.v-mode-btn{
+  font-family:'Space Mono',monospace;
+  font-size:.52rem;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+  color:var(--muted);
+  background:transparent;
+  border:none;
+  padding:6px 14px;
+  border-radius:16px;
+  cursor:none;
+  transition:all .3s ease;
+}
+.v-mode-btn.active,.v-mode-btn:hover{
+  color:#fff;
+  background:rgba(212,175,55,.18);
+  border-color:var(--accent);
+}
+.gallery-hdr-count{
+  font-family:'Space Mono',monospace;
+  font-size:.6rem;color:rgba(232,236,239,.35);
+  letter-spacing:.1em;
+}
+
+/* ══ 3D CAROUSEL STAGE ══ */
+.c3d-stage-wrap{
+  width:100%;
+  max-width:1400px;
+  margin:0 auto;
+  padding:20px 0 40px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  position:relative;
+}
+.c3d-stage{
+  width:100%;
+  height:520px;
+  position:relative;
+  perspective:1200px;
+  perspective-origin:50% 50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  user-select:none;
+  touch-action:pan-y;
+  cursor:grab;
+}
+.c3d-stage:active{cursor:grabbing}
+.c3d-track{
+  width:100%;
+  height:100%;
+  position:relative;
+  transform-style:preserve-3d;
+}
+.c3d-card{
+  position:absolute;
+  width:320px;
+  height:440px;
+  top:50%;
+  left:50%;
+  margin-left:-160px;
+  margin-top:-220px;
+  border-radius:12px;
+  overflow:hidden;
+  cursor:none;
+  transform-style:preserve-3d;
+  transition:transform .55s cubic-bezier(.16,1,.3,1), opacity .55s ease, filter .55s ease, box-shadow .55s ease;
+  box-shadow:0 20px 60px rgba(0,0,0,.7);
+  background:var(--surface);
+  will-change:transform,opacity;
+}
+.c3d-card img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+  pointer-events:none;
+  transition:transform .5s ease;
+}
+.c3d-card.active{
+  box-shadow:0 30px 90px rgba(0,0,0,.85), 0 0 0 1px var(--accent);
+}
+.c3d-card.active img{
+  transform:scale(1.02);
+}
+.c3d-card-over{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(to top, rgba(5,7,12,.88) 0%, transparent 60%);
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  padding:20px;
+  opacity:0;
+  transition:opacity .35s ease;
+  pointer-events:none;
+}
+.c3d-card.active .c3d-card-over,.c3d-card:hover .c3d-card-over{
+  opacity:1;
+}
+.c3d-card-num{
+  font-family:'Space Mono',monospace;
+  font-size:.6rem;
+  letter-spacing:.2em;
+  color:var(--accent);
+}
+.c3d-card-hint{
+  font-family:'Space Mono',monospace;
+  font-size:.5rem;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+  color:var(--muted);
+  background:rgba(255,255,255,.08);
+  padding:4px 8px;
+  border-radius:4px;
+}
+
+/* 3D Carousel Controls */
+.c3d-controls{
+  display:flex;
+  align-items:center;
+  gap:28px;
+  margin-top:30px;
+  position:relative;
+  z-index:20;
+}
+.c3d-nav-btn{
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.12);
+  color:var(--text);
+  font-size:1.1rem;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:none;
+  transition:all .3s ease;
+}
+.c3d-nav-btn:hover{
+  background:var(--accent-dim);
+  border-color:var(--accent);
+  color:var(--accent);
+  transform:scale(1.1);
+}
+.c3d-counter{
+  font-family:'Space Mono',monospace;
+  font-size:.68rem;
+  letter-spacing:.25em;
+  color:var(--muted);
+}
+.c3d-counter #c3d-cur{
+  color:var(--accent);
+  font-weight:700;
+}
+
+/* ══ GRID VIEW ══ */
+.gallery-grid{
+  max-width:1400px;margin:0 auto;
+  padding:0 48px;
+  columns:3;column-gap:16px;
+}
+.g-item{
+  break-inside:avoid;
+  margin-bottom:16px;
+  position:relative;
+  border-radius:6px;
+  cursor:none;
+  opacity:0;
+  transform:rotateX(30deg) translateY(60px) scale(.95);
+  transform-style:preserve-3d;
+  transition:opacity .8s var(--eout),transform .8s var(--eout),box-shadow .4s ease;
+  will-change:transform,opacity;
+  box-shadow:0 8px 32px rgba(0,0,0,.4);
+}
+.g-item.vis{
+  opacity:1;
+  transform:rotateX(0deg) translateY(0) scale(1);
+}
+.g-item:hover{
+  box-shadow:0 24px 60px rgba(0,0,0,.7),0 0 0 1px rgba(212,175,55,.15);
+  z-index:10;
+}
+.g-inner{
+  position:relative;
+  overflow:hidden;
+  border-radius:6px;
+  transform-style:preserve-3d;
+}
+.g-item img{
+  display:block;width:100%;height:auto;
+  transition:transform .6s var(--eout),filter .4s ease;
+  filter:brightness(.9) saturate(.8);
+}
+.g-item:hover img{filter:brightness(1.05) saturate(1.15)}
+.g-over{
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(0,0,0,.6) 0%,transparent 60%);
+  opacity:0;transition:opacity .4s ease;
+  display:flex;align-items:flex-end;padding:16px;
+}
+.g-item:hover .g-over{opacity:1}
+.g-num{
+  font-family:'Space Mono',monospace;
+  font-size:.52rem;letter-spacing:.18em;
+  color:rgba(255,255,255,.7);
+}
+.g-shine{
+  position:absolute;inset:0;
+  background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.08) 50%,transparent 60%);
+  opacity:0;pointer-events:none;transition:opacity .3s ease;border-radius:6px;
+}
+.g-item:hover .g-shine{opacity:1}
+
+/* LIGHTBOX */
+.lb{
+  position:fixed;inset:0;z-index:2000;
+  background:rgba(5,7,12,.96);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:opacity .35s ease;
+  user-select:none;
+  touch-action:pan-y;
+}
+.lb.open{opacity:1;pointer-events:all}
+.lb-img-wrap{
+  position:relative;
+  display:flex;align-items:center;justify-content:center;
+  max-width:90vw;max-height:90vh;
+}
+.lb-loader{
+  width:44px;height:44px;
+  border:3px solid rgba(255,255,255,.15);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  position:absolute;top:50%;left:50%;
+  margin-top:-22px;margin-left:-22px;
+  animation:lbSpin .7s linear infinite;
+  display:none;z-index:10;
+}
+@keyframes lbSpin{
+  to{transform:rotate(360deg)}
+}
+.lb-img{
+  max-width:90vw;max-height:90vh;
+  object-fit:contain;
+  border-radius:2px;
+  opacity:0;
+  transform:scale(0.97);
+  transition:opacity .25s ease, transform .25s ease;
+  pointer-events:none;
+}
+.lb-x{
+  position:absolute;top:24px;right:28px;
+  width:46px;height:46px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);
+  border-radius:50%;color:rgba(255,255,255,.8);
+  font-size:1.1rem;cursor:none;
+  display:flex;align-items:center;justify-content:center;
+  transition:border-color .3s,color .3s,transform .3s;
+  z-index:30;
+}
+.lb-x:hover{border-color:#fff;color:#fff;transform:rotate(90deg)}
+.lb-btn{
+  position:absolute;top:50%;transform:translateY(-50%);
+  width:52px;height:52px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
+  border-radius:50%;color:rgba(255,255,255,.85);
+  font-size:1.2rem;cursor:none;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .3s,border-color .3s,transform .3s var(--eout);
+  z-index:30;
+}
+.lb-btn:hover{background:rgba(212,175,55,.2);border-color:var(--accent);transform:translateY(-50%) scale(1.1)}
+#lb-prev{left:24px}
+#lb-next{right:24px}
+
+@media(max-width:800px), (pointer: coarse){
+  body{cursor:auto !important}
+  .c-dot,.c-ring{display:none !important}
+  .v-mode-btn,.about-cta,.c3d-nav-btn,.cp-btn,.cp-swatch,.g-item,.c3d-card,.lb-x,.lb-btn{cursor:pointer !important}
+  
+  .gallery-grid{columns:1;padding:0 20px}
+  .gallery-hdr{padding:0 20px 32px;flex-wrap:wrap;gap:16px}
+  .lb-img-wrap{max-width:96vw;max-height:82vh}
+  .lb-img{max-width:96vw;max-height:82vh}
+  #lb-prev{left:10px;width:50px;height:50px;background:rgba(5,7,12,0.75);border-color:rgba(255,255,255,0.3)}
+  #lb-next{right:10px;width:50px;height:50px;background:rgba(5,7,12,0.75);border-color:rgba(255,255,255,0.3)}
+  .lb-x{top:14px;right:14px;width:48px;height:48px;background:rgba(5,7,12,0.75);border-color:rgba(255,255,255,0.3)}
+  .c3d-stage{height:420px}
+  .c3d-card{width:260px;height:360px;margin-left:-130px;margin-top:-180px}
+}
+@media(min-width:801px) and (max-width:1100px){
+  .gallery-grid{columns:2}
+}
+}
+/* ══ COLOR PICKER ══ */
+.cp-btn{
+  position:fixed;
+  top:24px;left:24px;
+  z-index:8000;
+  width:40px;height:40px;
+  border-radius:50%;
+  border:2px solid rgba(255,255,255,.15);
+  background:rgba(13,17,26,.85);
+  backdrop-filter:blur(12px);
+  cursor:none;
+  display:flex;align-items:center;justify-content:center;
+  transition:border-color .3s,transform .35s var(--eout),box-shadow .3s;
+  box-shadow:0 4px 24px rgba(0,0,0,.4);
+}
+.cp-btn:hover{
+  border-color:var(--accent);
+  transform:scale(1.12);
+  box-shadow:0 6px 32px rgba(0,0,0,.5);
+}
+.cp-btn-icon{
+  width:18px;height:18px;
+  border-radius:50%;
+  background:conic-gradient(
+    hsl(0,90%,60%),hsl(40,90%,60%),hsl(80,90%,60%),
+    hsl(120,90%,60%),hsl(160,90%,60%),hsl(200,90%,60%),
+    hsl(240,90%,60%),hsl(280,90%,60%),hsl(320,90%,60%),hsl(360,90%,60%)
+  );
+  transition:transform .6s var(--eout);
+}
+.cp-btn:hover .cp-btn-icon{transform:rotate(180deg)}
+
+.cp-panel{
+  position:fixed;
+  top:76px;left:24px;
+  z-index:7999;
+  background:rgba(13,17,26,.95);
+  backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:12px;
+  padding:20px;
+  width:220px;
+  box-shadow:0 20px 60px rgba(0,0,0,.6);
+  opacity:0;
+  pointer-events:none;
+  transform:translateY(-8px) scale(.97);
+  transition:opacity .3s var(--eout),transform .3s var(--eout);
+}
+.cp-panel.open{
+  opacity:1;pointer-events:all;
+  transform:translateY(0) scale(1);
+}
+.cp-label{
+  font-family:'Space Mono',monospace;
+  font-size:.52rem;
+  letter-spacing:.3em;
+  text-transform:uppercase;
+  color:rgba(232,236,239,.4);
+  margin-bottom:14px;
+  display:block;
+}
+.cp-wheel-wrap{
+  position:relative;
+  width:100%;
+  margin-bottom:16px;
+}
+/* Make native color input look like a full wheel */
+.cp-wheel-wrap input[type=color]{
+  width:100%;
+  height:140px;
+  border:none;
+  border-radius:8px;
+  padding:0;
+  cursor:none;
+  background:none;
+  display:block;
+}
+.cp-wheel-wrap input[type=color]::-webkit-color-swatch-wrapper{padding:0;border-radius:8px}
+.cp-wheel-wrap input[type=color]::-webkit-color-swatch{border:none;border-radius:8px}
+.cp-wheel-wrap input[type=color]::-moz-color-swatch{border:none;border-radius:8px}
+.cp-swatches{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:7px;
+  margin-bottom:14px;
+}
+.cp-swatch{
+  width:100%;aspect-ratio:1;
+  border-radius:50%;
+  border:2px solid transparent;
+  cursor:none;
+  transition:transform .25s var(--eout),border-color .25s;
+  outline:none;
+}
+.cp-swatch:hover,.cp-swatch.active{transform:scale(1.18);border-color:#fff}
+.cp-hex{
+  width:100%;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:6px;
+  padding:8px 10px;
+  font-family:'Space Mono',monospace;
+  font-size:.62rem;
+  color:#e8ecef;
+  letter-spacing:.1em;
+  text-align:center;
+  outline:none;
+  transition:border-color .25s;
+}
+.cp-hex:focus{border-color:var(--accent)}
+</style>
+</head>
+<body>
+
+<!-- Loader -->
+<div class="ldr" id="ldr">
+  <div class="ldr-txt">Falconz Boy</div>
+  <div class="ldr-track"><div class="ldr-fill" id="ldr-fill"></div></div>
+</div>
+
+<!-- Progress bar -->
+<div class="prog" id="prog"></div>
+
+<!-- Cursor -->
+<div class="c-dot" id="cdot"></div>
+<div class="c-ring" id="cring"></div>
+
+<!-- Color Picker -->
+<button class="cp-btn" id="cp-btn" aria-label="Change accent color" title="Theme color">
+  <span class="cp-btn-icon"></span>
+</button>
+<div class="cp-panel" id="cp-panel" role="dialog" aria-label="Color picker">
+  <span class="cp-label">Accent Color</span>
+  <div class="cp-wheel-wrap">
+    <input type="color" id="cp-wheel" value="#d4af37" aria-label="Color wheel">
+  </div>
+  <div class="cp-swatches" id="cp-swatches"></div>
+  <input class="cp-hex" id="cp-hex" type="text" value="#d4af37" maxlength="7" spellcheck="false" aria-label="Hex color">
+</div>
+
+<!-- Hero -->
+<section class="hero" id="hero">
+  <h1 class="h-title">FALCONZ BOY</h1>
+  <div class="h-scroll" aria-hidden="true">
+    <span class="h-scroll-txt">Scroll</span>
+    <div class="h-scroll-line"></div>
+  </div>
+</section>
+
+<!-- ══ ABOUT ══ -->
+<section class="about" id="about">
+  <div class="about-right" id="about-right">
+    <div class="about-inner">
+      <p class="about-eyebrow">About Me</p>
+      <h2 class="about-heading">
+        Sabin
+        <span>Vishnu &mdash; Falconz Boy</span>
+      </h2>
+      <blockquote class="about-quote">
+        &ldquo;Light doesn&rsquo;t just illuminate &mdash;<br>it tells the truth about a moment.&rdquo;
+      </blockquote>
+      <div class="about-body">
+        <p>I&rsquo;m a passionate photographer who sees the world not as it is, but as light decides to reveal it. Every frame I chase is a quiet obsession &mdash; the golden second before sunset, the texture in a stranger&rsquo;s gaze, the geometry hiding in everyday streets.</p>
+        <p>From misty mountain ridgelines to the blue glow of an empty city at 3&nbsp;AM, I photograph whatever makes my pulse quicken. Photography isn&rsquo;t just what I do &mdash; it&rsquo;s how I make sense of the world.</p>
+      </div>
+      <a href="mailto:sabin@falconzboy.com" class="about-cta">
+        <span class="about-cta-txt">Get in Touch</span>
+        <span class="about-cta-arr">&#8594;</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PAGE 3 — GALLERY ══ -->
+<section class="gallery-section" id="works">
+  <div class="gallery-hdr">
+    <span class="gallery-hdr-lbl">Selected Works</span>
+    <div class="gallery-hdr-line"></div>
+    <div class="g-view-mode">
+      <button class="v-mode-btn active" id="v-mode-3d" aria-label="3D Carousel view">3D Carousel</button>
+      <button class="v-mode-btn" id="v-mode-grid" aria-label="Grid view">Grid</button>
+    </div>
+    <span class="gallery-hdr-count" id="photo-count">72 photos</span>
+  </div>
+
+  <!-- 3D Carousel Stage -->
+  <div class="c3d-stage-wrap" id="c3d-stage-wrap">
+    <div class="c3d-stage" id="c3d-stage">
+      <div class="c3d-track" id="c3d-track"></div>
+    </div>
+    <div class="c3d-controls">
+      <button class="c3d-nav-btn" id="c3d-prev" aria-label="Previous photo">&#8592;</button>
+      <div class="c3d-counter">
+        <span id="c3d-cur">01</span> / <span id="c3d-total">72</span>
+      </div>
+      <button class="c3d-nav-btn" id="c3d-next" aria-label="Next photo">&#8594;</button>
+    </div>
+  </div>
+
+  <!-- Grid View -->
+  <div class="gallery-grid" id="gallery" style="display:none;"></div>
+</section>
+
+<!-- Lightbox -->
+<div class="lb" id="lb" role="dialog" aria-modal="true">
+  <button class="lb-x" id="lb-x" aria-label="Close">&times;</button>
+  <button class="lb-btn" id="lb-prev" aria-label="Previous">&#8592;</button>
+  <div class="lb-img-wrap">
+    <div class="lb-loader" id="lb-loader"></div>
+    <img class="lb-img" id="lb-img" src="" alt="">
+  </div>
+  <button class="lb-btn" id="lb-next" aria-label="Next">&#8594;</button>
+</div>
+
+<script>
+/* LOADER */
+(()=>{
+  let p=0;const fill=document.getElementById('ldr-fill'),ldr=document.getElementById('ldr');
+  const t=setInterval(()=>{p=Math.min(p+Math.random()*20,92);fill.style.width=p+'%'},150);
+  window.addEventListener('load',()=>{
+    clearInterval(t);fill.style.width='100%';
+    setTimeout(()=>ldr.classList.add('gone'),450);
+  });
+})();
+
+/* CURSOR */
+(()=>{
+  const dot=document.getElementById('cdot'),ring=document.getElementById('cring');
+  let rx=0,ry=0,mx=window.innerWidth/2,my=window.innerHeight/2;
+  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px'});
+  (function loop(){rx+=(mx-rx)*.11;ry+=(my-ry)*.11;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(loop)})();
+})();
+
+/* SCROLL PROGRESS + HERO PARALLAX */
+(()=>{
+  const prog=document.getElementById('prog');
+  const heroBg=document.getElementById('hero-bg');
+
+  /* Zoom-out on load */
+  window.addEventListener('load',()=>{
+    if(heroBg)setTimeout(()=>{heroBg.style.transform='scale(1)';},100);
+  });
+
+  let ticking=false;
+  window.addEventListener('scroll',()=>{
+    if(!ticking){
+      requestAnimationFrame(()=>{
+        const sy=window.scrollY;
+        const h=window.innerHeight;
+        /* progress bar */
+        const pct=sy/(document.body.scrollHeight-h)*100;
+        prog.style.width=pct+'%';
+        /* parallax — image drifts up at 40% scroll speed */
+        if(heroBg && sy<h){
+          heroBg.style.transform=`scale(1) translateY(${sy*0.4}px)`;
+        }
+        ticking=false;
+      });
+      ticking=true;
+    }
+  },{passive:true});
+})();
+
+/* ABOUT SCROLL REVEAL */
+(()=>{
+  const el=document.getElementById('about-right');
+  if(!el)return;
+  const obs=new IntersectionObserver((entries)=>{
+    if(entries[0].isIntersecting){el.classList.add('vis');obs.disconnect();}
+  },{threshold:0.1});
+  obs.observe(el);
+  setTimeout(()=>el.classList.add('vis'),1200);
+})();
+
+/* GALLERY */
+const photos=[
+  'web/IMG20200902121553.jpg',
+  'web/IMG20200902121754.jpg',
+  'web/IMG20201112085635.jpg',
+  'web/IMG20201112085932-01-01-01.jpeg',
+  'web/IMG20201124113246-01-01.jpeg',
+  'web/IMG20210507092236-01-01_1.jpeg',
+  'web/IMG20210507092950-01-01.jpeg',
+  'web/IMG20210517154438.jpg',
+  'web/IMG20210614173644-01-01.jpeg',
+  'web/IMG20210815110223.jpg',
+  'web/IMG20210824125322-01.jpeg',
+  'web/IMG20210901095126-01.jpeg',
+  'web/IMG20211003145457.jpg',
+  'web/IMG20211111093025.jpg',
+  'web/IMG20220425085635-01.jpg',
+  'web/IMG20220609154204 (1).jpg',
+  'web/IMG20220630104108-01.jpeg',
+  'web/IMG20220711082008.jpg',
+  'web/IMG20220813141137-01-01.jpeg',
+  'web/IMG20220913141005_resize_70-01.jpg',
+  'web/IMG20221125164857_resize_60-01-01.jpeg',
+  'web/IMG20221212103021_resize_88-01 (1)-01.jpeg',
+  'web/IMG20230521165747.jpg',
+  'web/IMG20230610100205-01-02.jpeg',
+  'web/IMG20230624142646_resize_78-01-01.jpeg',
+  'web/IMG20250228173627.jpg',
+  'web/IMG_0021.JPG',
+  'web/IMG_0022.JPG',
+  'web/IMG_0023.JPG',
+  'web/IMG_20170110_171814065 (1)-01.jpeg',
+  'web/IMG_20170325_121245270-01 (1)-01.jpeg',
+  'web/IMG_20191214_202515-01.jpeg',
+  'web/IMG_20191214_202515.jpg',
+  'web/IMG_20240323_225937417.jpg',
+  'web/IMG_20240428_170006373_MP.jpg',
+  'web/IMG_20240706_154151452.jpg',
+  'web/IMG_20240811_111100763_MP (1).jpg',
+  'web/IMG_20240814_152308291_HDR.jpg',
+  'web/IMG_20240829_145558448_MP (1).jpg',
+  'web/IMG_20240922_073825537.jpg',
+  'web/IMG_20240922_073903307.jpg',
+  'web/IMG_20241028_123808849 (1).jpg',
+  'web/IMG_20241206_134348418 (1).jpg',
+  'web/IMG_20250224_173032472_HDR.jpg',
+  'web/IMG_20250411_161151233.jpg',
+  'web/IMG_20250722_133932120.jpg',
+  'web/IMG_20250722_134757104.jpg',
+  'web/IMG_20250812_095146954_MP.jpg',
+  'web/IMG_20250906_170925662_HDR_PORTRAIT.jpg',
+  'web/IMG_20260320_205840_308.webp',
+  'web/IMG_20260520_105901604_MP_AE (1).jpeg',
+  'web/IMG_20260531_131456306_AE.jpeg',
+  'web/IMG_20260607_123527274_AE.jpeg',
+  'web/IMG_20260713_172252802_HDR_AE (1).jpg',
+  'web/PicsArt_04-25-01.12.14.jpg',
+  'web/PicsArt_05-28-08.48.59-02.jpeg',
+  'web/PicsArt_06-09-10.05.08.jpg',
+  'web/PicsArt_06-22-08.24.08-01 (1).jpeg',
+  'web/PicsArt_11-09-07.00.54-01.jpeg',
+  'web/Picsart_24-05-28_20-05-26-826.jpg',
+  'web/cosmos-flower.jpg',
+  'web/retouch_2025081623524822.jpg',
+  'web/retouch_2025081822171900.jpg',
+  'web/retouch_2025081822260668.jpg',
+  'web/retouch_2025082610495409.jpg',
+  'web/retouch_2026052100180374.jpg',
+  'web/DSC00158 (1)-01.jpeg',
+  'web/1782497569357.jpeg',
+  'web/8d2bbd7b-35e2-4ee3-827c-8ecd56b5497d (1).jpeg',
+  'web/IMG20180726110139_resize_2-01.jpg',
+  'web/IMG20181124151005.jpg',
+];
+
+(()=>{
+  const gridEl=document.getElementById('gallery');
+  const trackEl=document.getElementById('c3d-track');
+  const stageWrap=document.getElementById('c3d-stage-wrap');
+  const curEl=document.getElementById('c3d-cur');
+  const totalEl=document.getElementById('c3d-total');
+  const btn3d=document.getElementById('v-mode-3d');
+  const btnGrid=document.getElementById('v-mode-grid');
+
+  let curIdx=0;
+  let lbIdx=0;
+  const total=photos.length;
+  if(totalEl)totalEl.textContent=total;
+
+  /* 1. BUILD GRID */
+  photos.forEach((src,i)=>{
+    const item=document.createElement('div');
+    item.className='g-item';
+    item.style.transitionDelay=`${(i%3)*80}ms`;
+    item.innerHTML=`
+      <div class="g-inner">
+        <img src="${src}" alt="Photo ${i+1}" loading="lazy">
+        <div class="g-over"><span class="g-num">${String(i+1).padStart(2,'0')}</span></div>
+        <div class="g-shine"></div>
+      </div>`;
+    item.addEventListener('click',()=>openLB(i));
+    gridEl.appendChild(item);
+  });
+
+  /* 2. BUILD 3D CAROUSEL CARDS */
+  const cCards=[];
+  photos.forEach((src,i)=>{
+    const card=document.createElement('div');
+    card.className='c3d-card';
+    card.innerHTML=`
+      <img data-src="${src}" alt="Photo ${i+1}">
+      <div class="c3d-card-over">
+        <span class="c3d-card-num">${String(i+1).padStart(2,'0')} / ${total}</span>
+        <span class="c3d-card-hint">Click to expand</span>
+      </div>`;
+    card.addEventListener('click',()=>{
+      if(curIdx===i){
+        openLB(i);
+      }else{
+        curIdx=i;
+        update3D();
+      }
+    });
+    trackEl.appendChild(card);
+    cCards.push(card);
+  });
+
+  /* UPDATE 3D COVERFLOW POSITIONS (Optimized for Mobile) */
+  function update3D(){
+    if(curEl)curEl.textContent=String(curIdx+1).padStart(2,'0');
+
+    const isMobile = window.innerWidth < 768;
+    const maxVisibleOffset = isMobile ? 2 : 4; // Only render visible cards near center on mobile!
+    const spacing = isMobile ? 180 : 260;
+
+    cCards.forEach((card,i)=>{
+      let offset = i - curIdx;
+
+      // Handle wraparound for smooth infinite wheel feel
+      if(offset > total/2) offset -= total;
+      if(offset < -total/2) offset += total;
+
+      const absOffset = Math.abs(offset);
+
+      // Completely hide offscreen cards to free GPU memory and prevent lag
+      if(absOffset > maxVisibleOffset){
+        card.style.display = 'none';
+        card.classList.remove('active');
+        return;
+      }
+
+      card.style.display = 'block';
+      card.style.pointerEvents = 'auto';
+
+      // Lazy load image when it is near the visible range and decode off main thread
+      if (absOffset <= maxVisibleOffset + 1) {
+        const img = card.querySelector('img');
+        if (img && !img.src) {
+          img.src = img.dataset.src;
+          img.decode().catch(() => {});
+        }
+      }
+
+      const tx = offset * spacing;
+      const tz = -absOffset * (isMobile ? 120 : 150);
+      const rotY = -offset * (isMobile ? 22 : 26);
+      const scale = 1 - absOffset * 0.08;
+      const opacity = Math.max(0, 1 - absOffset * (isMobile ? 0.3 : 0.22));
+      const zIndex = 100 - absOffset * 10;
+
+      card.style.transform = `translate3d(${tx}px, 0px, ${tz}px) rotateY(${rotY}deg) scale(${scale})`;
+      card.style.opacity = opacity;
+      card.style.zIndex = zIndex;
+
+      if(offset === 0){
+        card.classList.add('active');
+        card.style.filter = 'brightness(1.05)';
+      }else{
+        card.classList.remove('active');
+        card.style.filter = `brightness(${Math.max(0.4, 0.85 - absOffset*0.12)})`;
+      }
+    });
+  }
+
+  update3D();
+
+  /* NAV BUTTONS */
+  const prevBtn=document.getElementById('c3d-prev');
+  const nextBtn=document.getElementById('c3d-next');
+  if(prevBtn)prevBtn.addEventListener('click',()=>{curIdx=(curIdx-1+total)%total;update3D();});
+  if(nextBtn)nextBtn.addEventListener('click',()=>{curIdx=(curIdx+1)%total;update3D();});
+
+  /* DRAG & SWIPE FOR 3D CAROUSEL */
+  const stage=document.getElementById('c3d-stage');
+  let startX=0, isDragging=false, lastSwipeTime=0;
+  if(stage){
+    stage.addEventListener('mousedown',e=>{startX=e.clientX;isDragging=true;});
+    window.addEventListener('mousemove',e=>{
+      if(!isDragging)return;
+      const diff=e.clientX-startX;
+      if(Math.abs(diff)>50){
+        if(diff<0) curIdx=(curIdx+1)%total;
+        else curIdx=(curIdx-1+total)%total;
+        update3D();
+        startX=e.clientX;
+      }
+    });
+    window.addEventListener('mouseup',()=>isDragging=false);
+
+    /* Touch events for mobile */
+    stage.addEventListener('touchstart',e=>{
+      startX=e.touches[0].clientX;
+      isDragging=true;
+    },{passive:true});
+
+    stage.addEventListener('touchmove',e=>{
+      if(!isDragging)return;
+      const now=Date.now();
+      if(now - lastSwipeTime < 90) return; // Throttle touch moves for 60fps performance
+
+      const diff=e.touches[0].clientX-startX;
+      if(Math.abs(diff)>35){
+        if(diff<0) curIdx=(curIdx+1)%total;
+        else curIdx=(curIdx-1+total)%total;
+        update3D();
+        startX=e.touches[0].clientX;
+        lastSwipeTime=now;
+      }
+    },{passive:true});
+    stage.addEventListener('touchend',()=>isDragging=false);
+  }
+
+  /* VIEW MODE SWITCHING */
+  if(btn3d&&btnGrid){
+    btn3d.addEventListener('click',()=>{
+      btn3d.classList.add('active');
+      btnGrid.classList.remove('active');
+      stageWrap.style.display='flex';
+      gridEl.style.display='none';
+      update3D();
+    });
+    btnGrid.addEventListener('click',()=>{
+      btnGrid.classList.add('active');
+      btn3d.classList.remove('active');
+      stageWrap.style.display='none';
+      gridEl.style.display='block';
+      /* Trigger grid reveal */
+      document.querySelectorAll('.g-item').forEach(el=>el.classList.add('vis'));
+    });
+  }
+
+  /* 3D mouse-tracking tilt for grid items (Desktop Only) */
+  if (!('ontouchstart' in window) && window.innerWidth > 768) {
+    document.querySelectorAll('.g-item').forEach(card=>{
+      card.addEventListener('mousemove',e=>{
+        const r=card.getBoundingClientRect();
+        const cx=r.left+r.width/2;
+        const cy=r.top+r.height/2;
+        const dx=(e.clientX-cx)/(r.width/2);
+        const dy=(e.clientY-cy)/(r.height/2);
+        const maxTilt=12;
+        card.style.transform=`rotateX(${-dy*maxTilt}deg) rotateY(${dx*maxTilt}deg) scale(1.03) translateZ(10px)`;
+        const shine=card.querySelector('.g-shine');
+        if(shine){
+          const px=((e.clientX-r.left)/r.width)*100;
+          const py=((e.clientY-r.top)/r.height)*100;
+          shine.style.background=`radial-gradient(circle at ${px}% ${py}%, rgba(255,255,255,.13) 0%, transparent 55%)`;
+        }
+      });
+      card.addEventListener('mouseleave',()=>{
+        card.style.transform='';
+        const shine=card.querySelector('.g-shine');
+        if(shine)shine.style.background='';
+      });
+    });
+  }
+
+  /* LIGHTBOX WITH PRELOADING & TOUCH SWIPE */
+  const lb=document.getElementById('lb');
+  const lbImg=document.getElementById('lb-img');
+  const lbLoader=document.getElementById('lb-loader');
+  const lbCache={};
+
+  function preloadImg(src){
+    if(!src || lbCache[src]) return;
+    const img=new Image();
+    img.src=src;
+    img.decode().catch(() => {}); // pre-decode in background
+    lbCache[src]=img;
+  }
+
+  function openLB(i){
+    lbIdx=(i+photos.length)%photos.length;
+    const targetSrc=photos[lbIdx];
+
+    lbImg.style.opacity='0';
+    lbImg.style.transform='scale(0.97)';
+    if(lbLoader) lbLoader.style.display='block';
+
+    const tempImg = lbCache[targetSrc] || new Image();
+    if (!lbCache[targetSrc]) {
+      tempImg.src = targetSrc;
+      lbCache[targetSrc] = tempImg;
+    }
+
+    const showImage = () => {
+      if(photos[lbIdx]===targetSrc){
+        lbImg.src=targetSrc;
+        lbImg.style.opacity='1';
+        lbImg.style.transform='scale(1)';
+        if(lbLoader) lbLoader.style.display='none';
+        
+        // Preload next and prev photos instantly for zero lag
+        preloadImg(photos[(lbIdx+1)%photos.length]);
+        preloadImg(photos[(lbIdx-1+photos.length)%photos.length]);
+      }
+    };
+
+    if (tempImg.complete) {
+      tempImg.decode().then(showImage).catch(() => showImage());
+    } else {
+      tempImg.onload = () => {
+        tempImg.decode().then(showImage).catch(() => showImage());
+      };
+    }
+
+    lb.classList.add('open');
+    document.body.style.overflow='hidden';
+  }
+
+  function closeLB(){lb.classList.remove('open');document.body.style.overflow='';}
+  function prevLB(){lbIdx=(lbIdx-1+photos.length)%photos.length;openLB(lbIdx);}
+  function nextLB(){lbIdx=(lbIdx+1)%photos.length;openLB(lbIdx);}
+
+  document.getElementById('lb-x').addEventListener('click',closeLB);
+  document.getElementById('lb-prev').addEventListener('click',prevLB);
+  document.getElementById('lb-next').addEventListener('click',nextLB);
+  lb.addEventListener('click',e=>{if(e.target===lb)closeLB();});
+
+  /* Touch Swipe for Lightbox on Phone (Swipe Left = Next, Swipe Right = Prev, Swipe Down = Close) */
+  let touchStartX=0, touchStartY=0, touchEndX=0, touchEndY=0;
+  if(lb){
+    lb.addEventListener('touchstart',e=>{
+      touchStartX=e.touches[0].clientX;
+      touchStartY=e.touches[0].clientY;
+    },{passive:true});
+
+    lb.addEventListener('touchend',e=>{
+      touchEndX=e.changedTouches[0].clientX;
+      touchEndY=e.changedTouches[0].clientY;
+      const dx=touchEndX-touchStartX;
+      const dy=touchEndY-touchStartY;
+      const absDx=Math.abs(dx);
+      const absDy=Math.abs(dy);
+
+      if(absDx > 40 && absDx > absDy){
+        if(dx < 0) nextLB(); // Swipe Left
+        else prevLB();      // Swipe Right
+      }else if(absDy > 70 && dy > 0 && absDy > absDx){
+        closeLB();         // Swipe Down to Close
+      }
+    },{passive:true});
+  }
+
+  document.addEventListener('keydown',e=>{
+    if(lb.classList.contains('open')){
+      if(e.key==='Escape')closeLB();
+      if(e.key==='ArrowLeft')prevLB();
+      if(e.key==='ArrowRight')nextLB();
+    }else if(btn3d && btn3d.classList.contains('active')){
+      if(e.key==='ArrowLeft'){curIdx=(curIdx-1+total)%total;update3D();}
+      if(e.key==='ArrowRight'){curIdx=(curIdx+1)%total;update3D();}
+    }
+  });
+
+  window.addEventListener('resize',update3D);
+})();
+
+/* ══ COLOR PICKER ══ */
+(()=>{
+  const root=document.documentElement;
+  const btn=document.getElementById('cp-btn');
+  const panel=document.getElementById('cp-panel');
+  const wheel=document.getElementById('cp-wheel');
+  const hexIn=document.getElementById('cp-hex');
+  const swatchWrap=document.getElementById('cp-swatches');
+
+  const presets=[
+    '#d4af37','#e8c4c4','#7eb8d4','#6dbf8a',
+    '#c47ed4','#d4875e','#5e9fd4','#d45e5e',
+    '#4ec9c9','#ffffff'
+  ];
+
+  /* Hex → RGB helper */
+  function hexToRgb(h){
+    const r=parseInt(h.slice(1,3),16);
+    const g=parseInt(h.slice(3,5),16);
+    const b=parseInt(h.slice(5,7),16);
+    return{r,g,b};
+  }
+
+  /* Apply accent color everywhere */
+  function applyColor(hex){
+    const {r,g,b}=hexToRgb(hex);
+    root.style.setProperty('--accent',hex);
+    root.style.setProperty('--accent-dim',`rgba(${r},${g},${b},.14)`);
+    /* sync cursor ring border */
+    document.querySelector('.c-ring').style.borderColor=`rgba(${r},${g},${b},.45)`;
+    wheel.value=hex;
+    hexIn.value=hex;
+    /* mark active swatch */
+    document.querySelectorAll('.cp-swatch').forEach(s=>{
+      s.classList.toggle('active',s.dataset.color===hex);
+    });
+  }
+
+  /* Build swatches */
+  presets.forEach(color=>{
+    const s=document.createElement('button');
+    s.className='cp-swatch';
+    s.dataset.color=color;
+    s.style.background=color;
+    s.title=color;
+    s.setAttribute('aria-label',`Set color to ${color}`);
+    s.addEventListener('click',()=>applyColor(color));
+    swatchWrap.appendChild(s);
+  });
+  /* Mark default active */
+  document.querySelector('.cp-swatch').classList.add('active');
+
+  /* Toggle panel */
+  let open=false;
+  btn.addEventListener('click',e=>{
+    e.stopPropagation();
+    open=!open;
+    panel.classList.toggle('open',open);
+  });
+  document.addEventListener('click',e=>{
+    if(open&&!panel.contains(e.target)&&e.target!==btn){
+      open=false;panel.classList.remove('open');
+    }
+  });
+
+  /* Color wheel input */
+  wheel.addEventListener('input',()=>applyColor(wheel.value));
+
+  /* Hex text input */
+  hexIn.addEventListener('input',()=>{
+    const v=hexIn.value.trim();
+    if(/^#[0-9a-fA-F]{6}$/.test(v))applyColor(v);
+  });
+  hexIn.addEventListener('keydown',e=>{if(e.key==='Enter')hexIn.blur();});
+})();
+</script>
+</body>
+</html>

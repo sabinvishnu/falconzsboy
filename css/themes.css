@@ -1,0 +1,87 @@
+/* ==========================================================================
+   FALCON // ATELIER - AESTHETIC THEMES & COLOR PALETTES
+   ========================================================================== */
+
+/* 1. Theme: Obsidian Crimson Red (Default Pure Black & Red Mode) */
+:root, [data-theme="obsidian"] {
+  --bg-primary: #000000;
+  --bg-secondary: #080304;
+  --card-bg: #110507;
+  --text-primary: #ffffff;
+  --text-secondary: #fca5a5;
+  --text-muted: #991b1b;
+  
+  --accent-gold: #ef4444;
+  --btn-text: #ffffff;
+  
+  --border-color: rgba(239, 68, 68, 0.3);
+  --glass-bg: rgba(239, 68, 68, 0.05);
+  --glass-bg-hover: rgba(239, 68, 68, 0.2);
+  --nav-bg: rgba(0, 0, 0, 0.92);
+  
+  --shadow-glow: rgba(239, 68, 68, 0.35);
+  --shadow-glow-bright: rgba(239, 68, 68, 0.65);
+}
+
+/* 2. Theme: Editorial Light (Minimalist Gallery Aesthetic) */
+[data-theme="editorial"] {
+  --bg-primary: #f8f9fa;
+  --bg-secondary: #eeeef0;
+  --card-bg: #ffffff;
+  --text-primary: #111111;
+  --text-secondary: #4a4a4a;
+  --text-muted: #888888;
+  
+  --accent-gold: #111111;
+  --btn-text: #ffffff;
+  
+  --border-color: rgba(0, 0, 0, 0.12);
+  --glass-bg: rgba(0, 0, 0, 0.03);
+  --glass-bg-hover: rgba(0, 0, 0, 0.07);
+  --nav-bg: rgba(248, 249, 250, 0.85);
+  
+  --shadow-glow: rgba(0, 0, 0, 0.1);
+  --shadow-glow-bright: rgba(0, 0, 0, 0.2);
+}
+
+/* 3. Theme: Cyber Neon (Electric Future City Aesthetic) */
+[data-theme="cyber"] {
+  --bg-primary: #050508;
+  --bg-secondary: #0a0a12;
+  --card-bg: #0f0f1c;
+  --text-primary: #e6f7ff;
+  --text-secondary: #8ab4f8;
+  --text-muted: #536b88;
+  
+  --accent-gold: #00f0ff;
+  --btn-text: #050508;
+  
+  --border-color: rgba(0, 240, 255, 0.25);
+  --glass-bg: rgba(0, 240, 255, 0.04);
+  --glass-bg-hover: rgba(0, 240, 255, 0.12);
+  --nav-bg: rgba(5, 5, 8, 0.85);
+  
+  --shadow-glow: rgba(0, 240, 255, 0.3);
+  --shadow-glow-bright: rgba(0, 240, 255, 0.6);
+}
+
+/* 4. Theme: Warm Sepia (Analog Film Darkroom Aesthetic) */
+[data-theme="sepia"] {
+  --bg-primary: #120e0a;
+  --bg-secondary: #1a140f;
+  --card-bg: #221b14;
+  --text-primary: #f5eae0;
+  --text-secondary: #c8b7a6;
+  --text-muted: #887463;
+  
+  --accent-gold: #b87333;
+  --btn-text: #120e0a;
+  
+  --border-color: rgba(184, 115, 51, 0.2);
+  --glass-bg: rgba(184, 115, 51, 0.05);
+  --glass-bg-hover: rgba(184, 115, 51, 0.12);
+  --nav-bg: rgba(18, 14, 10, 0.85);
+  
+  --shadow-glow: rgba(184, 115, 51, 0.25);
+  --shadow-glow-bright: rgba(184, 115, 51, 0.5);
+}
