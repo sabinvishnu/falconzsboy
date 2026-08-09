@@ -900,24 +900,25 @@ const photos=[
 
       const absOffset = Math.abs(offset);
 
-      // Completely hide offscreen cards to free GPU memory and prevent lag
-      if(absOffset > maxVisibleOffset){
-        card.style.display = 'none';
-        card.classList.remove('active');
-        return;
-      }
-
-      card.style.display = 'block';
-      card.style.pointerEvents = 'auto';
-
-      // Lazy load image when it is near the visible range and decode off main thread
-      if (absOffset <= maxVisibleOffset + 1) {
+      // Lazy load and decode images when they are near the visible range (even if still hidden)
+      if (absOffset <= maxVisibleOffset + 2) {
         const img = card.querySelector('img');
         if (img && !img.src) {
           img.src = img.dataset.src;
           img.decode().catch(() => {});
         }
       }
+
+      // Hide offscreen cards using visibility: hidden instead of display: none to prevent layout thrashing/lag
+      if(absOffset > maxVisibleOffset){
+        card.style.visibility = 'hidden';
+        card.style.opacity = '0';
+        card.classList.remove('active');
+        return;
+      }
+
+      card.style.visibility = 'visible';
+      card.style.pointerEvents = 'auto';
 
       const tx = offset * spacing;
       const tz = -absOffset * (isMobile ? 120 : 150);

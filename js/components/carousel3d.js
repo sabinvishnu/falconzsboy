@@ -115,7 +115,7 @@ const Carousel3DComponent = {
       const sign = Math.sign(offset);
 
       // Lazy load image when it is near visible range (active card or its direct neighbors) and decode off main thread
-      if (absOffset <= 2) {
+      if (absOffset <= 3) {
         const img = card.querySelector('img');
         if (img && !img.src) {
           img.src = img.dataset.src;
@@ -125,24 +125,28 @@ const Carousel3DComponent = {
 
       if (offset === 0) {
         // Active Center Card
+        card.style.visibility = 'visible';
         card.style.transform = `translateX(0px) translateZ(140px) rotateY(0deg)`;
         card.style.opacity = '1';
         card.style.filter = 'brightness(1.05)';
         card.style.zIndex = '10';
       } else if (absOffset === 1) {
         // Side Cards
+        card.style.visibility = 'visible';
         card.style.transform = `translateX(${sign * 300}px) translateZ(-90px) rotateY(${sign * -28}deg)`;
         card.style.opacity = '0.78';
         card.style.filter = 'brightness(0.7)';
         card.style.zIndex = '5';
       } else if (absOffset === 2) {
         // Outer Side Cards
+        card.style.visibility = 'visible';
         card.style.transform = `translateX(${sign * 520}px) translateZ(-240px) rotateY(${sign * -45}deg)`;
         card.style.opacity = '0.45';
         card.style.filter = 'brightness(0.4)';
         card.style.zIndex = '2';
       } else {
         // Hidden Back Cards
+        card.style.visibility = 'hidden';
         card.style.transform = `translateX(${sign * 680}px) translateZ(-380px) rotateY(${sign * -60}deg)`;
         card.style.opacity = '0';
         card.style.filter = 'brightness(0.2)';
