@@ -62,31 +62,6 @@ const LightboxComponent = {
       });
     }
 
-    // Touch Swipe Gestures for Mobile
-    if (modal) {
-      let touchStartX = 0, touchStartY = 0, touchEndX = 0, touchEndY = 0;
-      modal.addEventListener('touchstart', (e) => {
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-      }, { passive: true });
-
-      modal.addEventListener('touchend', (e) => {
-        touchEndX = e.changedTouches[0].clientX;
-        touchEndY = e.changedTouches[0].clientY;
-        const dx = touchEndX - touchStartX;
-        const dy = touchEndY - touchStartY;
-        const absDx = Math.abs(dx);
-        const absDy = Math.abs(dy);
-
-        if (absDx > 40 && absDx > absDy) {
-          if (dx < 0) this.next();
-          else this.prev();
-        } else if (absDy > 70 && dy > 0 && absDy > absDx) {
-          this.close();
-        }
-      }, { passive: true });
-    }
-
     // Keyboard Shortcuts
     document.addEventListener('keydown', (e) => {
       if (!modal || !modal.classList.contains('active')) return;
@@ -94,16 +69,6 @@ const LightboxComponent = {
       if (e.key === 'ArrowLeft') this.prev();
       if (e.key === 'ArrowRight') this.next();
     });
-  },
-
-  preloadImage(url) {
-    if (!url) return;
-    if (!this._preloadCache) this._preloadCache = {};
-    if (this._preloadCache[url]) return;
-    const img = new Image();
-    img.src = url;
-    img.decode().catch(() => {}); // pre-decode in background
-    this._preloadCache[url] = img;
   },
 
   open(photoId) {
@@ -173,47 +138,9 @@ const LightboxComponent = {
 
     // Image
     const img = document.getElementById('lb-image');
-    const loader = document.getElementById('lb-loader') || document.getElementById('lightbox-loader');
-
     if (img) {
-      if (!this._preloadCache) this._preloadCache = {};
-      const tempImg = this._preloadCache[photo.url] || new Image();
-      if (!this._preloadCache[photo.url]) {
-        tempImg.src = photo.url;
-        this._preloadCache[photo.url] = tempImg;
-      }
-
-      let isSlow = false;
-      const slowTimeout = setTimeout(() => {
-        isSlow = true;
-        img.style.opacity = '0.3';
-        if (loader) loader.style.display = 'block';
-      }, 150);
-
-      const showImage = () => {
-        clearTimeout(slowTimeout);
-        if (this.photosList[this.currentPhotoIndex] === photo) {
-          img.src = photo.url;
-          img.alt = photo.title;
-          img.style.opacity = '1';
-          img.style.transform = 'scale(1)';
-          if (loader) loader.style.display = 'none';
-
-          // Preload next and prev photos for instant zero-lag navigation
-          const nextPhoto = this.photosList[(this.currentPhotoIndex + 1) % this.photosList.length];
-          const prevPhoto = this.photosList[(this.currentPhotoIndex - 1 + this.photosList.length) % this.photosList.length];
-          if (nextPhoto) this.preloadImage(nextPhoto.url);
-          if (prevPhoto) this.preloadImage(prevPhoto.url);
-        }
-      };
-
-      if (tempImg.complete) {
-        tempImg.decode().then(showImage).catch(() => showImage());
-      } else {
-        tempImg.onload = () => {
-          tempImg.decode().then(showImage).catch(() => showImage());
-        };
-      }
+      img.src = photo.url;
+      img.alt = photo.title;
     }
 
     // EXIF Information
