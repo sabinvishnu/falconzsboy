@@ -176,10 +176,6 @@ const LightboxComponent = {
     const loader = document.getElementById('lb-loader') || document.getElementById('lightbox-loader');
 
     if (img) {
-      img.style.opacity = '0';
-      img.style.transform = 'scale(0.97)';
-      if (loader) loader.style.display = 'block';
-
       if (!this._preloadCache) this._preloadCache = {};
       const tempImg = this._preloadCache[photo.url] || new Image();
       if (!this._preloadCache[photo.url]) {
@@ -187,7 +183,15 @@ const LightboxComponent = {
         this._preloadCache[photo.url] = tempImg;
       }
 
+      let isSlow = false;
+      const slowTimeout = setTimeout(() => {
+        isSlow = true;
+        img.style.opacity = '0.3';
+        if (loader) loader.style.display = 'block';
+      }, 150);
+
       const showImage = () => {
+        clearTimeout(slowTimeout);
         if (this.photosList[this.currentPhotoIndex] === photo) {
           img.src = photo.url;
           img.alt = photo.title;

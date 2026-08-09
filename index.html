@@ -32,7 +32,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 
 /* HERO */
 .hero{height:100vh;min-height:600px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:0 24px;background:var(--bg)}
-.h-title{font-family:'Inter',sans-serif;font-size:clamp(4.2rem,15vw,13.5rem);font-weight:900;line-height:.88;letter-spacing:-.04em;text-transform:uppercase;color:#fff;opacity:0;transform:translateY(30px);animation:fu 1.2s var(--eout) .4s forwards;text-shadow:0 20px 80px rgba(0,0,0,.8)}
+.h-title{font-family:'Inter',sans-serif;font-size:clamp(2.5rem,11vw,13.5rem);font-weight:900;line-height:.88;letter-spacing:-.04em;text-transform:uppercase;color:#fff;opacity:0;transform:translateY(30px);animation:fu 1.2s var(--eout) .4s forwards;text-shadow:0 20px 80px rgba(0,0,0,.8);white-space:nowrap;text-align:center}
 
 /* Scroll Indicator */
 .h-scroll{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0;animation:fi 1s ease 1.4s forwards;z-index:2}
@@ -1051,17 +1051,21 @@ const photos=[
     lbIdx=(i+photos.length)%photos.length;
     const targetSrc=photos[lbIdx];
 
-    lbImg.style.opacity='0';
-    lbImg.style.transform='scale(0.97)';
-    if(lbLoader) lbLoader.style.display='block';
-
     const tempImg = lbCache[targetSrc] || new Image();
     if (!lbCache[targetSrc]) {
       tempImg.src = targetSrc;
       lbCache[targetSrc] = tempImg;
     }
 
+    let isSlow = false;
+    const slowTimeout = setTimeout(() => {
+      isSlow = true;
+      lbImg.style.opacity = '0.3';
+      if (lbLoader) lbLoader.style.display = 'block';
+    }, 150);
+
     const showImage = () => {
+      clearTimeout(slowTimeout);
       if(photos[lbIdx]===targetSrc){
         lbImg.src=targetSrc;
         lbImg.style.opacity='1';
