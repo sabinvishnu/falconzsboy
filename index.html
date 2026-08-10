@@ -32,7 +32,10 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 
 /* HERO */
 .hero{height:100vh;min-height:600px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:0 16px;background:var(--bg);width:100%;max-width:100vw}
-.h-title{font-family:'Inter',sans-serif;font-size:clamp(1.8rem,9.5vw,13.5rem);font-weight:900;line-height:.88;letter-spacing:-.04em;text-transform:uppercase;color:#fff;opacity:0;transform:translateY(30px);animation:fu 1.2s var(--eout) .4s forwards;text-shadow:0 20px 80px rgba(0,0,0,.8);white-space:nowrap;text-align:center;display:block;width:100%;overflow:hidden;text-overflow:clip}
+.h-title{font-family:'Inter',sans-serif;font-size:clamp(1.8rem,9.5vw,13.5rem);font-weight:900;line-height:.88;letter-spacing:-.04em;text-transform:uppercase;color:#fff;opacity:0;transform:translateY(30px);animation:fu 1.2s var(--eout) .4s forwards;text-shadow:0 20px 80px rgba(0,0,0,.8);white-space:nowrap;text-align:center;display:block;width:100%;overflow:hidden;text-overflow:clip;position:relative;z-index:2}
+
+/* HERO CANVAS */
+#hero-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;}
 
 /* Scroll Indicator */
 .h-scroll{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0;animation:fi 1s ease 1.4s forwards;z-index:2}
@@ -261,7 +264,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
   overflow:hidden;
   cursor:none;
   transform-style:preserve-3d;
-  transition:transform .55s cubic-bezier(.16,1,.3,1), opacity .55s ease, filter .55s ease, box-shadow .55s ease;
+  transition:transform .75s cubic-bezier(.16,1,.3,1), opacity .75s ease, filter .75s ease, box-shadow .75s ease;
   box-shadow:0 20px 60px rgba(0,0,0,.7);
   background:var(--surface);
   will-change:transform,opacity;
@@ -473,10 +476,28 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 #lb-prev{left:24px}
 #lb-next{right:24px}
 
+/* LIGHTBOX DOWNLOAD BTN */
+.lb-dl{
+  position:absolute;top:24px;right:80px;
+  width:46px;height:46px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);
+  border-radius:50%;color:rgba(255,255,255,.8);
+  font-size:1rem;
+  display:flex;align-items:center;justify-content:center;
+  transition:border-color .3s,color .3s,background .3s,transform .3s;
+  z-index:30;
+  text-decoration:none;
+  cursor:none;
+}
+.lb-dl:hover{
+  border-color:var(--accent);color:var(--accent);
+  background:rgba(212,175,55,.12);
+  transform:scale(1.1);
+}
 @media(max-width:800px), (pointer: coarse){
   body{cursor:auto !important}
   .c-dot,.c-ring{display:none !important}
-  .v-mode-btn,.about-cta,.c3d-nav-btn,.cp-btn,.cp-swatch,.g-item,.c3d-card,.lb-x,.lb-btn{cursor:pointer !important}
+  .v-mode-btn,.about-cta,.c3d-nav-btn,.cp-btn,.cp-swatch,.g-item,.c3d-card,.lb-x,.lb-btn,.lb-dl{cursor:pointer !important}
   
   .gallery-grid{columns:1;padding:0 20px}
   .gallery-hdr{padding:0 20px 32px;flex-wrap:wrap;gap:16px}
@@ -634,6 +655,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 
 <!-- Hero -->
 <section class="hero" id="hero">
+  <canvas id="hero-canvas" aria-hidden="true"></canvas>
   <h1 class="h-title">FALCONZ BOY</h1>
   <div class="h-scroll" aria-hidden="true">
     <span class="h-scroll-txt">Scroll</span>
@@ -698,6 +720,9 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 <!-- Lightbox -->
 <div class="lb" id="lb" role="dialog" aria-modal="true">
   <button class="lb-x" id="lb-x" aria-label="Close">&times;</button>
+  <a class="lb-dl" id="lb-dl" download aria-label="Download photo" title="Download">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+  </a>
   <button class="lb-btn" id="lb-prev" aria-label="Previous">&#8592;</button>
   <div class="lb-img-wrap">
     <div class="lb-loader" id="lb-loader"></div>
@@ -715,6 +740,187 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
     clearInterval(t);fill.style.width='100%';
     setTimeout(()=>ldr.classList.add('gone'),450);
   });
+})();
+
+/* HERO STARS & COMETS */
+(()=>{
+  const canvas = document.getElementById('hero-canvas');
+  const ctx = canvas.getContext('2d');
+
+  function resize(){
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  /* ── Stars ── */
+  const STAR_COUNT = 220;
+  const stars = Array.from({length: STAR_COUNT}, () => ({
+    x: Math.random(),
+    y: Math.random(),
+    r: Math.random() * 1.4 + 0.3,
+    baseAlpha: Math.random() * 0.6 + 0.2,
+    phase: Math.random() * Math.PI * 2,
+    speed: Math.random() * 0.012 + 0.004,
+    // occasional color tints
+    hue: [0,0,0,200,270,40][Math.floor(Math.random()*6)],
+    sat: Math.random() > 0.75 ? 80 : 0
+  }));
+
+  /* ── Comet palette ── */
+  const COMET_COLORS = [
+    {h:185, s:95, l:65},  // cyan
+    {h:265, s:90, l:68},  // violet
+    {h:48,  s:95, l:62},  // gold
+    {h:340, s:90, l:65},  // rose
+    {h:150, s:85, l:58},  // mint
+    {h:20,  s:95, l:62},  // orange
+  ];
+
+  /* ── Comet factory ── */
+  function spawnComet(){
+    const c = COMET_COLORS[Math.floor(Math.random() * COMET_COLORS.length)];
+    const color = `hsl(${c.h},${c.s}%,${c.l}%)`;
+    const colorFade = `hsla(${c.h},${c.s}%,${c.l}%,0)`;
+    // angle range: mostly going diagonally down-right or down-left
+    const angle = (Math.random() * 60 + 15) * (Math.PI / 180) * (Math.random() > 0.5 ? 1 : -1);
+    const speed = Math.random() * 6 + 4;
+    const length = Math.random() * 220 + 120;
+    // start from random edge
+    const startEdge = Math.floor(Math.random() * 2); // 0=top, 1=right
+    let x, y;
+    if(startEdge === 0){
+      x = Math.random() * canvas.width;
+      y = -length;
+    } else {
+      x = canvas.width + length;
+      y = Math.random() * canvas.height * 0.6;
+    }
+    return { x, y, angle, speed, length, color, colorFade,
+      vx: Math.cos(angle + Math.PI/2) * speed,
+      vy: Math.sin(angle + Math.PI/2) * speed,
+      alpha: 0, life: 0, maxLife: (length + Math.max(canvas.width,canvas.height)) / speed,
+      width: Math.random() * 1.8 + 0.8
+    };
+  }
+
+  let comets = [];
+  let nextSpawn = 0;
+  let spawnInterval = 60; // frames between spawns
+
+  let frame = 0;
+  let animRunning = false;
+
+  function drawStars(t){
+    stars.forEach(s=>{
+      const alpha = s.baseAlpha * (0.5 + 0.5 * Math.sin(t * s.speed + s.phase));
+      const color = s.sat > 0
+        ? `hsla(${s.hue},${s.sat}%,90%,${alpha})`
+        : `rgba(255,255,255,${alpha})`;
+      ctx.beginPath();
+      ctx.arc(s.x * canvas.width, s.y * canvas.height, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+      // subtle glow on larger stars
+      if(s.r > 1.0){
+        ctx.beginPath();
+        ctx.arc(s.x * canvas.width, s.y * canvas.height, s.r * 2.5, 0, Math.PI * 2);
+        const grad = ctx.createRadialGradient(
+          s.x*canvas.width, s.y*canvas.height, 0,
+          s.x*canvas.width, s.y*canvas.height, s.r*2.5
+        );
+        grad.addColorStop(0, s.sat > 0
+          ? `hsla(${s.hue},${s.sat}%,90%,${alpha*0.5})`
+          : `rgba(255,255,255,${alpha*0.4})`);
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad;
+        ctx.fill();
+      }
+    });
+  }
+
+  function drawComet(comet){
+    const progress = comet.life / comet.maxLife;
+    // fade in first 10%, fade out last 20%
+    let alpha = 1;
+    if(progress < 0.1) alpha = progress / 0.1;
+    else if(progress > 0.8) alpha = (1 - progress) / 0.2;
+    comet.alpha = alpha;
+
+    const tailX = comet.x - comet.vx * (comet.length / comet.speed);
+    const tailY = comet.y - comet.vy * (comet.length / comet.speed);
+
+    // glow pass
+    ctx.save();
+    ctx.globalAlpha = alpha * 0.4;
+    ctx.filter = 'blur(4px)';
+    const gGlow = ctx.createLinearGradient(tailX, tailY, comet.x, comet.y);
+    gGlow.addColorStop(0, comet.colorFade);
+    gGlow.addColorStop(1, comet.color);
+    ctx.beginPath();
+    ctx.moveTo(tailX, tailY);
+    ctx.lineTo(comet.x, comet.y);
+    ctx.strokeStyle = gGlow;
+    ctx.lineWidth = comet.width * 4;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+    ctx.filter = 'none';
+    ctx.restore();
+
+    // sharp core
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    const gCore = ctx.createLinearGradient(tailX, tailY, comet.x, comet.y);
+    gCore.addColorStop(0, comet.colorFade);
+    gCore.addColorStop(1, comet.color);
+    ctx.beginPath();
+    ctx.moveTo(tailX, tailY);
+    ctx.lineTo(comet.x, comet.y);
+    ctx.strokeStyle = gCore;
+    ctx.lineWidth = comet.width;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    // bright head dot
+    const headGrad = ctx.createRadialGradient(comet.x, comet.y, 0, comet.x, comet.y, comet.width * 3);
+    headGrad.addColorStop(0, '#ffffff');
+    headGrad.addColorStop(0.4, comet.color);
+    headGrad.addColorStop(1, comet.colorFade);
+    ctx.beginPath();
+    ctx.arc(comet.x, comet.y, comet.width * 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = headGrad;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function tick(t){
+    frame++;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    drawStars(t * 0.001);
+
+    // spawn comets
+    if(frame >= nextSpawn){
+      comets.push(spawnComet());
+      // vary interval for a natural feel
+      nextSpawn = frame + Math.floor(Math.random() * 90 + 40);
+    }
+
+    // update & draw comets
+    comets = comets.filter(c => c.life <= c.maxLife);
+    comets.forEach(c=>{
+      c.x += c.vx;
+      c.y += c.vy;
+      c.life++;
+      drawComet(c);
+    });
+
+    animRunning = true;
+    requestAnimationFrame(tick);
+  }
+
+  if(!animRunning) requestAnimationFrame(tick);
 })();
 
 /* CURSOR */
@@ -956,8 +1162,54 @@ const photos=[
   /* NAV BUTTONS */
   const prevBtn=document.getElementById('c3d-prev');
   const nextBtn=document.getElementById('c3d-next');
-  if(prevBtn)prevBtn.addEventListener('click',()=>{curIdx=(curIdx-1+total)%total;update3D();});
-  if(nextBtn)nextBtn.addEventListener('click',()=>{curIdx=(curIdx+1)%total;update3D();});
+  if(prevBtn)prevBtn.addEventListener('click',()=>{curIdx=(curIdx-1+total)%total;update3D();resetAutoplay();});
+  if(nextBtn)nextBtn.addEventListener('click',()=>{curIdx=(curIdx+1)%total;update3D();resetAutoplay();});
+
+  /* ── AUTOPLAY ── */
+  const AUTOPLAY_DELAY = 1000; // ms between slides
+  let autoTimer = null;
+  let autoRunning = false;
+
+  function autoNext(){
+    curIdx = (curIdx + 1) % total;
+    update3D();
+  }
+
+  function startAutoplay(){
+    if(autoTimer) return;
+    autoTimer = setInterval(autoNext, AUTOPLAY_DELAY);
+    autoRunning = true;
+  }
+
+  function stopAutoplay(){
+    clearInterval(autoTimer);
+    autoTimer = null;
+    autoRunning = false;
+  }
+
+  function resetAutoplay(){
+    // Called after manual navigation — restart the timer so user gets a full interval
+    stopAutoplay();
+    if(autoRunning !== false) startAutoplay();
+  }
+
+  // Pause on hover / resume on leave
+  const stageWrapEl = document.getElementById('c3d-stage-wrap');
+  if(stageWrapEl){
+    stageWrapEl.addEventListener('mouseenter', stopAutoplay);
+    stageWrapEl.addEventListener('mouseleave', () => { if(inView) startAutoplay(); });
+    stageWrapEl.addEventListener('touchstart', stopAutoplay, {passive:true});
+    stageWrapEl.addEventListener('touchend', () => { if(inView) setTimeout(startAutoplay, 1200); }, {passive:true});
+  }
+
+  // Only run autoplay while gallery is visible in viewport
+  let inView = false;
+  const autoObserver = new IntersectionObserver((entries)=>{
+    inView = entries[0].isIntersecting;
+    if(inView){ startAutoplay(); }
+    else { stopAutoplay(); }
+  }, {threshold: 0.25});
+  if(stageWrapEl) autoObserver.observe(stageWrapEl);
 
   /* DRAG & SWIPE FOR 3D CAROUSEL */
   const stage=document.getElementById('c3d-stage');
@@ -1048,6 +1300,7 @@ const photos=[
   const lb=document.getElementById('lb');
   const lbImg=document.getElementById('lb-img');
   const lbLoader=document.getElementById('lb-loader');
+  const lbDl=document.getElementById('lb-dl');
   const lbCache={};
 
   function preloadImg(src){
@@ -1099,6 +1352,12 @@ const photos=[
 
     lb.classList.add('open');
     document.body.style.overflow='hidden';
+    // Update download link
+    if(lbDl){
+      lbDl.href = targetSrc;
+      // extract filename from path
+      lbDl.download = targetSrc.split('/').pop();
+    }
   }
 
   function closeLB(){lb.classList.remove('open');document.body.style.overflow='';}
