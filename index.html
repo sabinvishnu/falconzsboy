@@ -1651,13 +1651,13 @@
     <div class="gallery-grid" id="gallery" style="display:none;"></div>
   </section>
 
-  <!-- ══ PAGE 4 — COMMUNITY PHOTOGRAPHY & SUBMISSION ══ -->
+  <!-- ══ PAGE 4 — VISITOR SHOTS (COMMUNITY SUBMISSION) ══ -->
   <section class="comm-section" id="community">
     <div class="comm-hdr">
-      <span class="comm-eyebrow">// COMMUNITY ATELIER</span>
-      <h2 class="comm-title">Submit Your Vision</h2>
+      <span class="comm-eyebrow">// COMMUNITY GALLERY</span>
+      <h2 class="comm-title">Visitor Shots</h2>
       <p class="comm-desc">
-        Every photographer carries a unique lens. Upload your favorite capture or snap a live frame on the spot. Your name will be permanently stamped as the artist on the public exhibition.
+        Capture or upload your own frame to be featured in our public gallery. Enter your name below to have it tagged on your shot.
       </p>
     </div>
 
@@ -1665,13 +1665,13 @@
     <div class="comm-studio" id="comm-studio">
       <div class="comm-input-group">
         <label for="comm-artist-name" class="comm-label">
-          <span>Artist / Creator Name</span>
+          <span>Visitor Name</span>
           <span class="req">* Required to Submit</span>
         </label>
         <div class="comm-input-wrap">
-          <input type="text" id="comm-artist-name" class="comm-input" placeholder="e.g. John Doe, Elena Rostova" maxlength="40" autocomplete="name">
+          <input type="text" id="comm-artist-name" class="comm-input" placeholder="Enter your full name..." maxlength="40" autocomplete="name">
         </div>
-        <p class="comm-error-msg" id="comm-name-error">Please enter your artist name before submitting.</p>
+        <p class="comm-error-msg" id="comm-name-error">Please enter your name before submitting.</p>
       </div>
 
       <!-- Drag & Drop Zone / Choice Area -->
@@ -1681,7 +1681,7 @@
           <circle cx="8.5" cy="8.5" r="1.5"/>
           <polyline points="21 15 16 10 5 21"/>
         </svg>
-        <div class="comm-dz-title">Drop your photograph here, or choose an option</div>
+        <div class="comm-dz-title">Drop your photo here, or choose an option</div>
         <div class="comm-dz-hint">Supports high-res JPG, PNG, WEBP</div>
       </div>
 
@@ -1706,7 +1706,7 @@
             <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
             <circle cx="12" cy="13" r="4"/>
           </svg>
-          Take Live Photo
+          Capture Live Photo
         </button>
       </div>
 
@@ -1715,8 +1715,8 @@
         <div class="comm-preview-card" id="comm-preview-card">
           <canvas id="comm-canvas"></canvas>
           <div class="comm-watermark-chip" id="comm-watermark-chip">
-            <span class="comm-wm-artist" id="comm-wm-artist-text">PHOTO BY ARTIST</span>
-            <span class="comm-wm-tag">FALCONZ BOY // COMMUNITY</span>
+            <span class="comm-wm-artist" id="comm-wm-artist-text">SHOT BY VISITOR</span>
+            <span class="comm-wm-tag">VISITOR SHOTS // FALCONZ BOY</span>
           </div>
         </div>
 
@@ -1725,15 +1725,15 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
-            Publish to Community Gallery
+            Publish to Visitor Gallery
           </button>
           <button type="button" class="comm-btn comm-btn-sec" id="comm-dl-btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
               <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
             </svg>
-            Download Watermarked Photo
+            Download Tagged Photo
           </button>
           <button type="button" class="comm-btn comm-btn-ghost" id="comm-reset-btn">
             Retake / Change
@@ -1746,8 +1746,8 @@
     <div class="comm-gallery-wrap">
       <div class="comm-gallery-hdr">
         <div class="comm-gallery-title">
-          <span>Public Exhibition</span>
-          <span class="comm-count-badge" id="comm-count-badge">0 Frames</span>
+          <span>All Visitor Shots</span>
+          <span class="comm-count-badge" id="comm-count-badge">0 Shots</span>
         </div>
       </div>
 
@@ -1784,7 +1784,7 @@
       <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
       <polyline points="22 4 12 14.01 9 11.01"/>
     </svg>
-    <span id="comm-toast-msg">Frame published to Community Gallery!</span>
+    <span id="comm-toast-msg">Photo published to Visitor Shots gallery!</span>
   </div>
 
   <!-- FOOTER -->
@@ -1795,7 +1795,7 @@
         <a href="#hero" class="footer-link">Home</a>
         <a href="#about" class="footer-link">About</a>
         <a href="#works" class="footer-link">Portfolio</a>
-        <a href="#community" class="footer-link">Community</a>
+        <a href="#community" class="footer-link">Visitor Shots</a>
         <a href="mailto:sabin@falconzboy.com" class="footer-link">Contact</a>
       </div>
       <div class="footer-copy">
@@ -2656,23 +2656,23 @@
         ctx.textAlign = 'right';
         ctx.textBaseline = 'bottom';
 
-        // Line 1: PHOTO BY [NAME]
+        // Line 1: SHOT BY [NAME]
         ctx.font = `700 ${baseFontSize}px 'Space Mono', monospace, sans-serif`;
         ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
         ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
         ctx.shadowBlur = 8;
-        ctx.fillText(`PHOTO BY ${artist}`, w - padX, h - padY - (subFontSize + 6));
+        ctx.fillText(`SHOT BY ${artist}`, w - padX, h - padY - (subFontSize + 6));
 
-        // Line 2: FALCONZ BOY // COMMUNITY ATELIER
+        // Line 2: VISITOR SHOTS // FALCONZ BOY
         ctx.font = `600 ${subFontSize}px 'Space Mono', monospace, sans-serif`;
         ctx.fillStyle = '#c084fc';
-        ctx.fillText(`FALCONZ BOY // COMMUNITY ATELIER`, w - padX, h - padY);
+        ctx.fillText(`VISITOR SHOTS // FALCONZ BOY`, w - padX, h - padY);
 
         ctx.shadowColor = 'transparent';
         ctx.shadowBlur = 0;
 
         // Sync HTML badge
-        if (wmArtistText) wmArtistText.textContent = `PHOTO BY ${artist}`;
+        if (wmArtistText) wmArtistText.textContent = `SHOT BY ${artist}`;
       }
 
       /* HANDLE IMAGE FILE SELECTION */
@@ -2905,20 +2905,20 @@
         commGrid.innerHTML = '';
 
         if (countBadge) {
-          countBadge.textContent = `${submissions.length} Frame${submissions.length === 1 ? '' : 's'}`;
+          countBadge.textContent = `${submissions.length} Shot${submissions.length === 1 ? '' : 's'}`;
         }
 
         submissions.forEach((item, idx) => {
           const card = document.createElement('div');
           card.className = 'comm-card';
-          const initial = item.artist ? item.artist.charAt(0).toUpperCase() : 'A';
+          const initial = item.artist ? item.artist.charAt(0).toUpperCase() : 'V';
 
           card.innerHTML = `
             <div class="comm-card-img-wrap">
-              <img class="comm-card-img" src="${item.imgData}" alt="Photo by ${item.artist}" loading="lazy">
+              <img class="comm-card-img" src="${item.imgData}" alt="Shot by ${item.artist}" loading="lazy">
               <div class="comm-watermark-chip">
                 <span class="comm-wm-artist">${item.artist}</span>
-                <span class="comm-wm-tag">FALCONZ BOY // COMMUNITY</span>
+                <span class="comm-wm-tag">VISITOR SHOTS // FALCONZ BOY</span>
               </div>
             </div>
             <div class="comm-card-info">
