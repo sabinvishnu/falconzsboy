@@ -1509,6 +1509,173 @@
       border-color: rgba(239, 68, 68, 0.5);
       color: #f87171;
     }
+
+    /* ADMIN LOGIN MODAL & BADGE */
+    .vs-admin-trigger {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.25);
+      cursor: pointer;
+      font-size: 0.7rem;
+      font-family: 'Space Mono', monospace;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: color 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .vs-admin-trigger:hover {
+      color: #c084fc;
+    }
+
+    .vs-admin-pill {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: rgba(168, 85, 247, 0.12);
+      border: 1px solid rgba(168, 85, 247, 0.35);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-family: 'Space Mono', monospace;
+      color: #e9d5ff;
+      margin: 12px auto 0;
+      width: fit-content;
+    }
+
+    .vs-admin-pill.active {
+      display: inline-flex;
+    }
+
+    .vs-admin-logout-btn {
+      background: none;
+      border: none;
+      color: #f87171;
+      cursor: pointer;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      text-decoration: underline;
+      padding: 0 4px;
+    }
+
+    .vs-admin-logout-btn:hover {
+      color: #ef4444;
+    }
+
+    /* Admin Modal */
+    .vs-admin-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .vs-admin-modal.open {
+      display: flex;
+    }
+
+    .vs-admin-card {
+      background: #0a0a0f;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 16px;
+      padding: 28px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 40px rgba(168, 85, 247, 0.15);
+      position: relative;
+    }
+
+    .vs-admin-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .vs-admin-close:hover {
+      color: #fff;
+    }
+
+    .vs-admin-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .vs-admin-sub {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+      margin-bottom: 20px;
+    }
+
+    .vs-admin-input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 12px 14px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+      outline: none;
+      transition: border-color 0.2s ease;
+      box-sizing: border-box;
+    }
+
+    .vs-admin-input:focus {
+      border-color: #a855f7;
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+    }
+
+    .vs-admin-err {
+      color: #f87171;
+      font-size: 0.72rem;
+      font-family: 'Space Mono', monospace;
+      margin-bottom: 14px;
+      display: none;
+    }
+
+    .vs-admin-submit-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #a855f7, #6366f1);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .vs-admin-submit-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(168, 85, 247, 0.35);
+    }
   </style>
 </head>
 
@@ -1592,11 +1759,19 @@
   <!-- ══ PAGE 4 — VISITORS SHOTS ══ -->
   <section class="vs-section" id="visitors-shots">
     <div class="vs-hdr">
-      <span class="vs-eyebrow">// COMMUNITY GALLERY</span>
+      <span class="vs-eyebrow">
+        // COMMUNITY GALLERY
+        <button type="button" class="vs-admin-trigger" id="vs-admin-open-btn" title="Admin Login (Ctrl+Shift+A)" aria-label="Admin Access">🔒</button>
+      </span>
       <h2 class="vs-title">VISITORS SHOTS</h2>
       <p class="vs-desc">
-        Upload your photograph or take a live photo from your camera. Enter your name below to have it permanently stamped onto your shot in our public gallery.
+        Upload your photograph or take a live photo from your camera. Enter your name below to showcase your vision in our public gallery.
       </p>
+      <!-- ADMIN ACTIVE PILL -->
+      <div class="vs-admin-pill" id="vs-admin-pill">
+        <span>👑 Admin Mode Active</span>
+        <button type="button" class="vs-admin-logout-btn" id="vs-admin-logout-btn">Log Out</button>
+      </div>
     </div>
 
     <!-- SUBMISSION STUDIO -->
@@ -1698,6 +1873,21 @@
       <button class="vs-cam-sub-btn" id="vs-cam-close" title="Close Camera" aria-label="Close Camera">
         &times;
       </button>
+  </div>
+
+  <!-- ADMIN LOGIN MODAL -->
+  <div class="vs-admin-modal" id="vs-admin-modal" role="dialog" aria-modal="true">
+    <div class="vs-admin-card">
+      <button class="vs-admin-close" id="vs-admin-close-btn" aria-label="Close Admin Modal">&times;</button>
+      <h3 class="vs-admin-title">
+        <span>🔒</span> Admin Authentication
+      </h3>
+      <p class="vs-admin-sub">Enter your master passcode to manage & delete visitor submissions.</p>
+      <form id="vs-admin-form" onsubmit="return false;">
+        <input type="password" id="vs-admin-pass-input" class="vs-admin-input" placeholder="Enter master passcode..." autocomplete="current-password">
+        <p class="vs-admin-err" id="vs-admin-err-msg">Invalid passcode. Please try again.</p>
+        <button type="submit" class="vs-admin-submit-btn" id="vs-admin-submit-btn">Unlock Admin Access</button>
+      </form>
     </div>
   </div>
 
@@ -2414,15 +2604,99 @@
       const publishBtn = document.getElementById('vs-publish-btn');
       const dlBtn = document.getElementById('vs-dl-btn');
       const resetBtn = document.getElementById('vs-reset-btn');
-      const vsGrid = document.getElementById('vs-grid');
-      const countBadge = document.getElementById('vs-count-badge');
+      
+      // Admin elements
+      const adminOpenBtn = document.getElementById('vs-admin-open-btn');
+      const adminModal = document.getElementById('vs-admin-modal');
+      const adminCloseBtn = document.getElementById('vs-admin-close-btn');
+      const adminForm = document.getElementById('vs-admin-form');
+      const adminPassInput = document.getElementById('vs-admin-pass-input');
+      const adminErrMsg = document.getElementById('vs-admin-err-msg');
+      const adminPill = document.getElementById('vs-admin-pill');
+      const adminLogoutBtn = document.getElementById('vs-admin-logout-btn');
 
-      // Camera modal elements
-      const camModal = document.getElementById('vs-cam-modal');
-      const camVideo = document.getElementById('vs-cam-video');
-      const camShutter = document.getElementById('vs-cam-shutter');
-      const camClose = document.getElementById('vs-cam-close');
-      const camFlip = document.getElementById('vs-cam-flip');
+      // SHA-256 hash of "falconz2026"
+      const ADMIN_HASH = '77f9872e411bf88f34346eb4a055d0458df8a5a40a373b7e7161b9a955cb1ea8';
+
+      async function sha256(message) {
+        const msgBuffer = new TextEncoder().encode(message);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      }
+
+      function isAdminLoggedIn() {
+        return sessionStorage.getItem('falconz_admin_auth_token') === ADMIN_HASH;
+      }
+
+      function updateAdminUI() {
+        if (adminPill) {
+          if (isAdminLoggedIn()) {
+            adminPill.classList.add('active');
+          } else {
+            adminPill.classList.remove('active');
+          }
+        }
+        renderGallery();
+      }
+
+      function openAdminModal() {
+        if (adminModal) {
+          if (adminErrMsg) adminErrMsg.style.display = 'none';
+          if (adminPassInput) adminPassInput.value = '';
+          adminModal.classList.add('open');
+          setTimeout(() => adminPassInput && adminPassInput.focus(), 100);
+        }
+      }
+
+      function closeAdminModal() {
+        if (adminModal) adminModal.classList.remove('open');
+      }
+
+      if (adminOpenBtn) adminOpenBtn.addEventListener('click', openAdminModal);
+      if (adminCloseBtn) adminCloseBtn.addEventListener('click', closeAdminModal);
+      if (adminModal) {
+        adminModal.addEventListener('click', (e) => {
+          if (e.target === adminModal) closeAdminModal();
+        });
+      }
+
+      if (adminForm) {
+        adminForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const pass = (adminPassInput ? adminPassInput.value : '').trim();
+          if (!pass) return;
+
+          const hashed = await sha256(pass);
+          if (hashed === ADMIN_HASH) {
+            sessionStorage.setItem('falconz_admin_auth_token', ADMIN_HASH);
+            closeAdminModal();
+            updateAdminUI();
+          } else {
+            if (adminErrMsg) adminErrMsg.style.display = 'block';
+            if (adminPassInput) adminPassInput.focus();
+          }
+        });
+      }
+
+      if (adminLogoutBtn) {
+        adminLogoutBtn.addEventListener('click', () => {
+          sessionStorage.removeItem('falconz_admin_auth_token');
+          updateAdminUI();
+        });
+      }
+
+      // Shortcut: Ctrl + Shift + A or Alt + A for Admin login
+      document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) || (e.altKey && (e.key === 'A' || e.key === 'a'))) {
+          e.preventDefault();
+          if (adminModal && adminModal.classList.contains('open')) {
+            closeAdminModal();
+          } else {
+            openAdminModal();
+          }
+        }
+      });
 
       let rawImageObj = null;
       let camStream = null;
@@ -2477,7 +2751,6 @@
       function renderWatermark() {
         if (!rawImageObj || !canvas) return;
         const ctx = canvas.getContext('2d');
-        const visitorName = (nameInput.value.trim() || 'VISITOR').toUpperCase();
 
         const maxDim = 1600;
         let w = rawImageObj.naturalWidth || rawImageObj.width;
@@ -2691,10 +2964,21 @@
           return;
         }
 
+        const isAuthAdmin = isAdminLoggedIn();
+
         shots.forEach((item, idx) => {
           const card = document.createElement('div');
           card.className = 'vs-card';
           const initial = item.name ? item.name.charAt(0).toUpperCase() : 'V';
+
+          const deleteButtonHtml = isAuthAdmin ? `
+            <button class="vs-del-btn" data-idx="${idx}" title="Admin Delete Photo" aria-label="Admin Delete Photo">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              </svg>
+            </button>
+          ` : '';
 
           card.innerHTML = `
             <div class="vs-card-img-wrap">
@@ -2715,12 +2999,7 @@
                   </svg>
                   <span class="like-cnt">${item.likes}</span>
                 </button>
-                <button class="vs-del-btn" data-idx="${idx}" title="Delete photo" aria-label="Delete this shot">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="3 6 5 6 21 6"/>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                  </svg>
-                </button>
+                ${deleteButtonHtml}
               </div>
             </div>
           `;
@@ -2744,8 +3023,30 @@
 
           const delBtn = card.querySelector('.vs-del-btn');
           if (delBtn) {
-            delBtn.addEventListener('click', (e) => {
+            delBtn.addEventListener('click', async (e) => {
               e.stopPropagation();
+              if (!isAdminLoggedIn()) {
+                alert('Unauthorized: Admin access required to delete photos.');
+                return;
+              }
+
+              const target = shots[idx];
+              if (!target) return;
+
+              // Protected Backend API Trigger
+              try {
+                await fetch('/api/delete-shot', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionStorage.getItem('falconz_admin_auth_token')}`
+                  },
+                  body: JSON.stringify({ id: target.id })
+                });
+              } catch (apiErr) {
+                // Client fallback if offline / static preview
+              }
+
               shots.splice(idx, 1);
               saveShots(shots);
               renderGallery();
@@ -2779,7 +3080,7 @@
         });
       }
 
-      renderGallery();
+      updateAdminUI();
     })();
   </script>
   <script src="js/splashCursor.js"></script>
