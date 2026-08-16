@@ -2023,12 +2023,11 @@
       <h3 class="vs-admin-title">
         <span>🔒</span> Admin Authentication
       </h3>
-      <p class="vs-admin-sub">Enter your master passcode to manage & delete visitor submissions.</p>
-      <div style="position: relative; margin-bottom: 8px;">
-        <input type="password" id="vs-admin-pass-input" class="vs-admin-input" placeholder="Enter master passcode..." autocomplete="current-password" style="padding-right: 44px; margin-bottom: 0;">
-        <button type="button" id="vs-admin-toggle-pass" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem;" title="Show/Hide Passcode">👁️</button>
+      <p class="vs-admin-sub">Authorized admin access only.</p>
+      <div style="margin-bottom: 8px;">
+        <input type="password" id="vs-admin-pass-input" class="vs-admin-input" placeholder="••••••••••••" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
       </div>
-      <p class="vs-admin-err" id="vs-admin-err-msg">Invalid passcode. Please try again.</p>
+      <p class="vs-admin-err" id="vs-admin-err-msg">Access denied.</p>
       <button type="button" class="vs-admin-submit-btn" id="vs-admin-submit-btn">Unlock Admin Access</button>
     </div>
   </div>
