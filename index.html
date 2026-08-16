@@ -1682,22 +1682,19 @@
       box-shadow: 0 6px 20px rgba(168, 85, 247, 0.35);
     }
 
-    /* TOP NAVIGATION BAR */
+    /* TOP NAVIGATION BAR (LOCKED TO FIRST PAGE TOP) */
     .top-nav {
-      position: fixed;
+      position: absolute;
       top: 0;
       left: 0;
-      width: 100vw;
+      width: 100%;
       height: 60px;
       z-index: 1000;
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 0 28px;
-      background: rgba(10, 10, 15, 0.65);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      background: transparent;
       box-sizing: border-box;
       transition: all 0.3s ease;
     }
@@ -1897,21 +1894,11 @@
   <!-- ══ PAGE 4 — VISITORS SHOTS ══ -->
   <section class="vs-section" id="visitors-shots">
     <div class="vs-hdr">
-      <div style="display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;">
-        <span class="vs-eyebrow">// COMMUNITY GALLERY</span>
-        <button type="button" class="vs-admin-trigger" id="vs-admin-open-btn" title="Admin Login (Ctrl+Shift+A)" aria-label="Admin Access">
-          🔒 Admin Login
-        </button>
-      </div>
+      <span class="vs-eyebrow">// COMMUNITY GALLERY</span>
       <h2 class="vs-title">VISITORS SHOTS</h2>
       <p class="vs-desc">
         Upload your photograph or take a live photo from your camera. Enter your name below to showcase your vision in our public gallery.
       </p>
-      <!-- ADMIN ACTIVE PILL -->
-      <div class="vs-admin-pill" id="vs-admin-pill">
-        <span>👑 Admin Mode Active</span>
-        <button type="button" class="vs-admin-logout-btn" id="vs-admin-logout-btn">Log Out</button>
-      </div>
     </div>
 
     <!-- SUBMISSION STUDIO -->
