@@ -939,7 +939,6 @@
 
     /* Respect user preference for reduced motion */
     @media(prefers-reduced-motion:reduce) {
-
       *,
       *::before,
       *::after {
@@ -947,60 +946,6 @@
         animation-iteration-count: 1 !important;
         transition-duration: .01ms !important
       }
-
-
-
-    /* FOOTER */
-    .site-footer {
-      background: #040508;
-      border-top: 1px solid rgba(255, 255, 255, 0.07);
-      padding: 50px 24px;
-      text-align: center;
-    }
-
-    .footer-inner {
-      max-width: 1400px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-    }
-
-    .footer-brand {
-      font-family: 'Cinzel Decorative', 'Inter', serif;
-      font-size: 1.2rem;
-      font-weight: 700;
-      letter-spacing: .15em;
-      color: #fff;
-    }
-
-    .footer-links {
-      display: flex;
-      gap: 24px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .footer-link {
-      font-family: 'Space Mono', monospace;
-      font-size: .7rem;
-      letter-spacing: .15em;
-      text-transform: uppercase;
-      color: var(--muted);
-      text-decoration: none;
-      transition: color .25s ease;
-    }
-
-    .footer-link:hover {
-      color: var(--accent);
-    }
-
-    .footer-copy {
-      font-family: 'Space Mono', monospace;
-      font-size: .62rem;
-      color: rgba(255, 255, 255, 0.3);
-      letter-spacing: .1em;
     }
   </style>
 </head>
@@ -1081,22 +1026,6 @@
     <!-- Grid View -->
     <div class="gallery-grid" id="gallery" style="display:none;"></div>
   </section>
-
-  <!-- FOOTER -->
-  <footer class="site-footer">
-    <div class="footer-inner">
-      <div class="footer-brand">FALCONZ BOY</div>
-      <div class="footer-links">
-        <a href="#hero" class="footer-link">Home</a>
-        <a href="#about" class="footer-link">About</a>
-        <a href="#works" class="footer-link">Portfolio</a>
-        <a href="mailto:sabin@falconzboy.com" class="footer-link">Contact</a>
-      </div>
-      <div class="footer-copy">
-        &copy; 2026 FALCONZ BOY // PHOTOGRAPHY ATELIER. ALL RIGHTS RESERVED.
-      </div>
-    </div>
-  </footer>
 
   <!-- Lightbox -->
   <div class="lb" id="lb" role="dialog" aria-modal="true">
