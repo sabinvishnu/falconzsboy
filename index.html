@@ -2025,10 +2025,10 @@
       </h3>
       <p class="vs-admin-sub">Enter your master passcode to manage & delete visitor submissions.</p>
       <div style="position: relative; margin-bottom: 8px;">
-        <input type="password" id="vs-admin-pass-input" class="vs-admin-input" placeholder="Enter master passcode (falconz2026)..." autocomplete="current-password" style="padding-right: 44px; margin-bottom: 0;">
+        <input type="password" id="vs-admin-pass-input" class="vs-admin-input" placeholder="Enter master passcode..." autocomplete="current-password" style="padding-right: 44px; margin-bottom: 0;">
         <button type="button" id="vs-admin-toggle-pass" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem;" title="Show/Hide Passcode">👁️</button>
       </div>
-      <p class="vs-admin-err" id="vs-admin-err-msg">Invalid passcode. Please enter: falconz2026</p>
+      <p class="vs-admin-err" id="vs-admin-err-msg">Invalid passcode. Please try again.</p>
       <button type="button" class="vs-admin-submit-btn" id="vs-admin-submit-btn">Unlock Admin Access</button>
     </div>
   </div>
@@ -2770,7 +2770,7 @@
       const adminLogoutBtn = document.getElementById('vs-admin-logout-btn');
       const topAdminLogoutBtn = document.getElementById('top-admin-logout-btn');
 
-      // SHA-256 hash of "falconz2026"
+      // SHA-256 hash of the master passcode
       const ADMIN_HASH = '77f9872e411bf88f34346eb4a055d0458df8a5a40a373b7e7161b9a955cb1ea8';
 
       async function sha256(message) {
@@ -2852,15 +2852,8 @@
         const pass = (adminPassInput ? adminPassInput.value : '').trim();
         if (!pass) return;
 
-        let isValid = false;
-        if (pass === 'falconz2026' || pass.toLowerCase() === 'falconz2026' || pass === 'falcon') {
-          isValid = true;
-        } else {
-          const hashed = await sha256(pass);
-          if (hashed === ADMIN_HASH) isValid = true;
-        }
-
-        if (isValid) {
+        const hashed = await sha256(pass);
+        if (hashed === ADMIN_HASH) {
           sessionStorage.setItem('falconz_admin_auth_token', ADMIN_HASH);
           localStorage.setItem('falconz_admin_auth_token', ADMIN_HASH);
           closeAdminModal();

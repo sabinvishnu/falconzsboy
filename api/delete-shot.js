@@ -2,7 +2,7 @@
 // Method: POST /api/delete-shot
 // Header: Authorization: Bearer <ADMIN_TOKEN>
 
-// Expected SHA-256 hash of the admin master passcode ("falconz2026")
+// SHA-256 hash of the admin master passcode
 const ADMIN_HASH = process.env.ADMIN_AUTH_HASH || "77f9872e411bf88f34346eb4a055d0458df8a5a40a373b7e7161b9a955cb1ea8";
 
 export default async function handler(req, res) {
