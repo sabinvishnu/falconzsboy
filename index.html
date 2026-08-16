@@ -1611,14 +1611,10 @@
         </button>
       </div>
 
-      <!-- LIVE PREVIEW & WATERMARK AREA -->
+      <!-- LIVE PREVIEW AREA -->
       <div class="vs-preview-box" id="vs-preview-box">
         <div class="vs-preview-card" id="vs-preview-card">
           <canvas id="vs-canvas"></canvas>
-          <div class="vs-watermark-chip" id="vs-watermark-chip">
-            <span class="vs-wm-artist" id="vs-wm-artist-text">SHOT BY VISITOR</span>
-            <span class="vs-wm-tag">VISITORS SHOTS // FALCONZ BOY</span>
-          </div>
         </div>
 
         <div class="vs-preview-controls">
@@ -2405,7 +2401,7 @@
       let rawImageObj = null;
       let camStream = null;
       let camFacingMode = 'environment';
-      const STORAGE_KEY = 'falconz_visitors_shots_v3';
+      const STORAGE_KEY = 'falconz_visitors_shots_v4';
 
       // No default seed shots — empty until visitors submit
       const defaultShots = [];
@@ -2469,43 +2465,8 @@
         canvas.width = w;
         canvas.height = h;
 
-        // 1. Draw Image
+        // Draw pure, clean photo with NO text, NO watermark, and NO overlays
         ctx.drawImage(rawImageObj, 0, 0, w, h);
-
-        // 2. Draw Subtle Dark Gradient Scrim
-        const scrimHeight = Math.max(80, Math.round(h * 0.18));
-        const grad = ctx.createLinearGradient(0, h - scrimHeight, 0, h);
-        grad.addColorStop(0, 'rgba(0, 0, 0, 0)');
-        grad.addColorStop(0.5, 'rgba(0, 0, 0, 0.45)');
-        grad.addColorStop(1, 'rgba(0, 0, 0, 0.82)');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, h - scrimHeight, w, scrimHeight);
-
-        // 3. Draw Watermark Typography
-        const baseFontSize = Math.max(14, Math.round(w * 0.024));
-        const subFontSize = Math.max(10, Math.round(w * 0.015));
-        const padX = Math.max(20, Math.round(w * 0.035));
-        const padY = Math.max(20, Math.round(h * 0.04));
-
-        ctx.textAlign = 'right';
-        ctx.textBaseline = 'bottom';
-
-        // Line 1: SHOT BY [NAME]
-        ctx.font = `700 ${baseFontSize}px 'Space Mono', monospace, sans-serif`;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-        ctx.shadowBlur = 8;
-        ctx.fillText(`SHOT BY ${visitorName}`, w - padX, h - padY - (subFontSize + 6));
-
-        // Line 2: VISITORS SHOTS // FALCONZ BOY
-        ctx.font = `600 ${subFontSize}px 'Space Mono', monospace, sans-serif`;
-        ctx.fillStyle = '#c084fc';
-        ctx.fillText(`VISITORS SHOTS // FALCONZ BOY`, w - padX, h - padY);
-
-        ctx.shadowColor = 'transparent';
-        ctx.shadowBlur = 0;
-
-        if (wmArtistText) wmArtistText.textContent = `SHOT BY ${visitorName}`;
       }
 
       /* PROCESS SELECTED FILE */
@@ -2707,10 +2668,6 @@
           card.innerHTML = `
             <div class="vs-card-img-wrap">
               <img class="vs-card-img" src="${item.imgData}" alt="Shot by ${item.name}" loading="lazy">
-              <div class="vs-watermark-chip">
-                <span class="vs-wm-artist">${item.name}</span>
-                <span class="vs-wm-tag">VISITORS SHOTS // FALCONZ BOY</span>
-              </div>
             </div>
             <div class="vs-card-info">
               <div class="vs-card-artist-wrap">
