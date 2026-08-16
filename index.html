@@ -1586,17 +1586,6 @@
         <p class="vs-error-msg" id="vs-name-error">Please enter your name before submitting.</p>
       </div>
 
-      <!-- Drag & Drop Zone / Choice Area -->
-      <div class="vs-dropzone" id="vs-dropzone">
-        <svg class="vs-dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-          <circle cx="8.5" cy="8.5" r="1.5"/>
-          <polyline points="21 15 16 10 5 21"/>
-        </svg>
-        <div class="vs-dz-title">Drop your photo here, or choose an option below</div>
-        <div class="vs-dz-hint">Supports high-res JPG, PNG, WEBP</div>
-      </div>
-
       <!-- Action Buttons -->
       <div class="vs-btn-row">
         <!-- Hidden file input for uploading from device -->
@@ -2393,7 +2382,6 @@
     (() => {
       const nameInput = document.getElementById('vs-name-input');
       const nameError = document.getElementById('vs-name-error');
-      const dropzone = document.getElementById('vs-dropzone');
       const uploadBtn = document.getElementById('vs-upload-btn');
       const camBtn = document.getElementById('vs-cam-btn');
       const fileInput = document.getElementById('vs-file-input');
@@ -2417,38 +2405,10 @@
       let rawImageObj = null;
       let camStream = null;
       let camFacingMode = 'environment';
-      const STORAGE_KEY = 'falconz_visitors_shots_v2';
+      const STORAGE_KEY = 'falconz_visitors_shots_v3';
 
-      // Curated seed shots
-      const defaultShots = [
-        {
-          id: 'vs_seed_1',
-          name: 'Elena Rostova',
-          imgData: 'web_edited_webp_thumb/cosmos-flower.webp',
-          fullImg: 'web_edited_webp/cosmos-flower.webp',
-          time: '2 hours ago',
-          likes: 24,
-          liked: false
-        },
-        {
-          id: 'vs_seed_2',
-          name: 'Marcus Vance',
-          imgData: 'web_edited_webp_thumb/DSC00158 (1).webp',
-          fullImg: 'web_edited_webp/DSC00158 (1).webp',
-          time: '5 hours ago',
-          likes: 41,
-          liked: false
-        },
-        {
-          id: 'vs_seed_3',
-          name: 'Aria Chen',
-          imgData: 'web_edited_webp_thumb/1200px-Chamomile@original_size-01 (1).webp',
-          fullImg: 'web_edited_webp/1200px-Chamomile@original_size-01 (1).webp',
-          time: 'Yesterday',
-          likes: 58,
-          liked: false
-        }
-      ];
+      // No default seed shots — empty until visitors submit
+      const defaultShots = [];
 
       function getStoredShots() {
         try {
@@ -2593,28 +2553,6 @@
         uploadBtn.addEventListener('click', () => fileInput.click());
       }
 
-      // Drag & Drop
-      if (dropzone) {
-        dropzone.addEventListener('click', () => fileInput && fileInput.click());
-        ['dragenter', 'dragover'].forEach(ev => {
-          dropzone.addEventListener(ev, e => {
-            e.preventDefault();
-            dropzone.classList.add('dragover');
-          });
-        });
-        ['dragleave', 'drop'].forEach(ev => {
-          dropzone.addEventListener(ev, e => {
-            e.preventDefault();
-            dropzone.classList.remove('dragover');
-          });
-        });
-        dropzone.addEventListener('drop', e => {
-          if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
-            processFile(e.dataTransfer.files[0]);
-          }
-        });
-      }
-
       /* LIVE CAMERA */
       async function startCamera() {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -2750,6 +2688,15 @@
 
         if (countBadge) {
           countBadge.textContent = `${shots.length} Shot${shots.length === 1 ? '' : 's'}`;
+        }
+
+        if (shots.length === 0) {
+          vsGrid.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 48px 24px; color: var(--muted); font-family: 'Space Mono', monospace; font-size: 0.8rem; border: 1px dashed rgba(255, 255, 255, 0.12); border-radius: 14px; letter-spacing: 0.05em; background: rgba(255, 255, 255, 0.01);">
+              No visitor shots submitted yet. Upload a photo or take a live photo to be the first!
+            </div>
+          `;
+          return;
         }
 
         shots.forEach((item, idx) => {
