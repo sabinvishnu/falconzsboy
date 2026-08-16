@@ -495,7 +495,7 @@
       transform-style: preserve-3d;
       transition: transform .6s cubic-bezier(.16, 1, .3, 1), opacity .6s ease, filter .5s ease, box-shadow .5s ease;
       box-shadow: 0 20px 60px rgba(0, 0, 0, .7);
-      background: var(--surface);
+      background: #0d1017;
       will-change: transform, opacity;
     }
 
@@ -505,7 +505,12 @@
       object-fit: cover;
       display: block;
       pointer-events: none;
-      transition: transform .5s ease;
+      opacity: 0;
+      transition: opacity .35s ease, transform .5s ease;
+    }
+
+    .c3d-card img.loaded {
+      opacity: 1;
     }
 
     .c3d-card.active {
@@ -631,15 +636,22 @@
       position: relative;
       overflow: hidden;
       border-radius: 6px;
+      background: #0d1017;
+      min-height: 200px;
     }
 
     .g-item img {
       display: block;
       width: 100%;
       height: auto;
-      transition: transform .5s var(--eout), filter .35s ease;
+      opacity: 0;
+      transition: opacity .4s ease, transform .5s var(--eout), filter .35s ease;
       filter: brightness(.9) saturate(.85);
-      will-change: transform;
+      will-change: transform, opacity;
+    }
+
+    .g-item img.loaded {
+      opacity: 1;
     }
 
     .g-item:hover img {
@@ -1284,8 +1296,25 @@
       let curIdx = 0;
       let lbIdx = 0;
       let cCards = [];
+      let gridObserver = null;
+
+      function loadImg(img) {
+        if (!img) return;
+        if (!img.src && img.dataset.src) {
+          img.src = img.dataset.src;
+          if (img.complete && img.naturalWidth !== 0) {
+            img.classList.add('loaded');
+          } else {
+            img.onload = () => img.classList.add('loaded');
+            img.onerror = () => img.classList.add('loaded');
+          }
+        } else if (img.src && img.complete) {
+          img.classList.add('loaded');
+        }
+      }
 
       function buildGallery(photos) {
+        if (gridObserver) gridObserver.disconnect();
         gridEl.innerHTML = '';
         trackEl.innerHTML = '';
         cCards = [];
@@ -1301,29 +1330,45 @@
           return;
         }
 
-        /* 1. BUILD GRID */
+        /* 1. BUILD GRID WITH INTERSECTION OBSERVER */
+        gridObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const img = entry.target.querySelector('img');
+              loadImg(img);
+              gridObserver.unobserve(entry.target);
+            }
+          });
+        }, { rootMargin: '450px 0px' });
+
         photos.forEach((src, i) => {
           const safeSrc = encodeURI(src);
           const item = document.createElement('div');
           item.className = 'g-item vis';
-          item.style.transitionDelay = `${(i % 3) * 60}ms`;
+          item.style.transitionDelay = `${(i % 3) * 50}ms`;
           item.innerHTML = `
         <div class="g-inner">
-          <img src="${safeSrc}" alt="Photo ${i + 1}" loading="lazy" decoding="async">
+          <img data-src="${safeSrc}" alt="Photo ${i + 1}" decoding="async" ${i < 4 ? 'fetchpriority="high"' : ''}>
           <div class="g-over"></div>
           <div class="g-shine"></div>
         </div>`;
           item.addEventListener('click', () => openLB(i));
           gridEl.appendChild(item);
+
+          if (i < 6) {
+            loadImg(item.querySelector('img'));
+          } else {
+            gridObserver.observe(item);
+          }
         });
 
-        /* 2. BUILD 3D CAROUSEL CARDS */
+        /* 2. BUILD 3D CAROUSEL CARDS (WINDOWED ON-DEMAND LOADING) */
         photos.forEach((src, i) => {
           const safeSrc = encodeURI(src);
           const card = document.createElement('div');
           card.className = 'c3d-card';
           card.innerHTML = `
-        <img src="${safeSrc}" alt="Photo ${i + 1}" loading="lazy" decoding="async">
+        <img data-src="${safeSrc}" alt="Photo ${i + 1}" decoding="async">
         <div class="c3d-card-over">
           <span class="c3d-card-hint">Click to expand</span>
         </div>`;
@@ -1384,7 +1429,7 @@
         });
       }
 
-      /* UPDATE 3D COVERFLOW POSITIONS (Optimized for Mobile) */
+      /* UPDATE 3D COVERFLOW POSITIONS WITH SMART WINDOWED LOADING */
       function update3D() {
         const total = activePhotos.length;
         if (total === 0) {
@@ -1395,6 +1440,7 @@
 
         const isMobile = window.innerWidth < 768;
         const maxVisibleOffset = isMobile ? 1 : 4;
+        const loadWindow = isMobile ? 2 : 3;
         const spacing = isMobile ? 180 : 260;
 
         cCards.forEach((card, i) => {
@@ -1406,15 +1452,16 @@
 
           const absOffset = Math.abs(offset);
 
-          // Pre-decode active and nearby images for zero stuttering
-          if (absOffset <= maxVisibleOffset + 2) {
+          // On-demand lazy load only visible & approaching cards
+          if (absOffset <= loadWindow) {
             const img = card.querySelector('img');
+            loadImg(img);
             if (img && img.decode && !img.complete) {
               img.decode().catch(() => { });
             }
           }
 
-          // Hide offscreen cards using visibility: hidden instead of display: none to prevent layout thrashing/lag
+          // Hide offscreen cards
           if (absOffset > maxVisibleOffset) {
             card.style.visibility = 'hidden';
             card.style.opacity = '0';
@@ -1456,7 +1503,7 @@
       if (nextBtn) nextBtn.addEventListener('click', () => { if (activePhotos.length === 0) return; curIdx = (curIdx + 1) % activePhotos.length; update3D(); resetAutoplay(); });
 
       /* ── AUTOPLAY ── */
-      const AUTOPLAY_DELAY = 3500; // ms between slides — slower = far fewer GPU repaints
+      const AUTOPLAY_DELAY = 3500;
       let autoTimer = null;
       let autoRunning = false;
 
@@ -1528,7 +1575,7 @@
         stage.addEventListener('touchmove', e => {
           if (!isDragging || activePhotos.length === 0) return;
           const now = Date.now();
-          if (now - lastSwipeTime < 90) return; // Throttle touch moves for 60fps performance
+          if (now - lastSwipeTime < 90) return;
 
           const diff = e.touches[0].clientX - startX;
           if (Math.abs(diff) > 35) {
@@ -1556,12 +1603,15 @@
           btn3d.classList.remove('active');
           stageWrap.style.display = 'none';
           gridEl.style.display = 'block';
-          /* Trigger grid reveal */
-          document.querySelectorAll('.g-item').forEach(el => el.classList.add('vis'));
+          gridEl.querySelectorAll('.g-item').forEach(el => {
+            el.classList.add('vis');
+            const img = el.querySelector('img');
+            loadImg(img);
+          });
         });
       }
 
-      /* LIGHTBOX WITH PRELOADING & TOUCH SWIPE */
+      /* LIGHTBOX WITH INSTANT PRELOADING & TOUCH SWIPE */
       const lb = document.getElementById('lb');
       const lbImg = document.getElementById('lb-img');
       const lbLoader = document.getElementById('lb-loader');
@@ -1590,15 +1640,7 @@
           lbCache[targetSrc] = tempImg;
         }
 
-        let isSlow = false;
-        const slowTimeout = setTimeout(() => {
-          isSlow = true;
-          if (lbImg) lbImg.style.opacity = '0.3';
-          if (lbLoader) lbLoader.style.display = 'block';
-        }, 150);
-
         const showImage = () => {
-          clearTimeout(slowTimeout);
           if (lbIdx === currentReq) {
             lbImg.src = targetSrc;
             lbImg.style.opacity = '1';
@@ -1611,21 +1653,19 @@
           }
         };
 
+        if (lbLoader) lbLoader.style.display = tempImg.complete ? 'none' : 'block';
+
         if (tempImg.complete && tempImg.naturalWidth !== 0) {
-          tempImg.decode().then(showImage).catch(() => showImage());
+          showImage();
         } else {
-          tempImg.onload = () => {
-            tempImg.decode().then(showImage).catch(() => showImage());
-          };
+          tempImg.onload = () => showImage();
           tempImg.onerror = () => showImage();
         }
 
         lb.classList.add('open');
         document.body.style.overflow = 'hidden';
-        // Update download link
         if (lbDl) {
           lbDl.href = targetSrc;
-          // extract filename from path
           lbDl.download = targetSrc.split('/').pop();
         }
       }
@@ -1639,7 +1679,7 @@
       document.getElementById('lb-next').addEventListener('click', nextLB);
       lb.addEventListener('click', e => { if (e.target === lb) closeLB(); });
 
-      /* Touch Swipe for Lightbox on Phone (Swipe Left = Next, Swipe Right = Prev, Swipe Down = Close) */
+      /* Touch Swipe for Lightbox on Phone */
       let touchStartX = 0, touchStartY = 0, touchEndX = 0, touchEndY = 0;
       if (lb) {
         lb.addEventListener('touchstart', e => {
@@ -1656,10 +1696,10 @@
           const absDy = Math.abs(dy);
 
           if (absDx > 40 && absDx > absDy) {
-            if (dx < 0) nextLB(); // Swipe Left
-            else prevLB();      // Swipe Right
+            if (dx < 0) nextLB();
+            else prevLB();
           } else if (absDy > 70 && dy > 0 && absDy > absDx) {
-            closeLB();         // Swipe Down to Close
+            closeLB();
           }
         }, { passive: true });
       }
