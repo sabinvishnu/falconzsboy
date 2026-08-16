@@ -1298,6 +1298,10 @@
       let cCards = [];
       let gridObserver = null;
 
+      function getThumbSrc(src) {
+        return src.replace('web_edited_webp/', 'web_edited_webp_thumb/').replace('web_unedited_webp/', 'web_unedited_webp_thumb/');
+      }
+
       function loadImg(img) {
         if (!img) return;
         if (!img.src && img.dataset.src) {
@@ -1330,7 +1334,7 @@
           return;
         }
 
-        /* 1. BUILD GRID WITH INTERSECTION OBSERVER */
+        /* 1. BUILD GRID WITH ULTRA-FAST 30KB THUMBNAILS */
         gridObserver = new IntersectionObserver((entries) => {
           entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -1339,16 +1343,16 @@
               gridObserver.unobserve(entry.target);
             }
           });
-        }, { rootMargin: '450px 0px' });
+        }, { rootMargin: '500px 0px' });
 
         photos.forEach((src, i) => {
-          const safeSrc = encodeURI(src);
+          const safeThumbSrc = encodeURI(getThumbSrc(src));
           const item = document.createElement('div');
           item.className = 'g-item vis';
-          item.style.transitionDelay = `${(i % 3) * 50}ms`;
+          item.style.transitionDelay = `${(i % 3) * 40}ms`;
           item.innerHTML = `
         <div class="g-inner">
-          <img data-src="${safeSrc}" alt="Photo ${i + 1}" decoding="async" ${i < 4 ? 'fetchpriority="high"' : ''}>
+          <img data-src="${safeThumbSrc}" alt="Photo ${i + 1}" decoding="async" ${i < 6 ? 'fetchpriority="high"' : ''}>
           <div class="g-over"></div>
           <div class="g-shine"></div>
         </div>`;
@@ -1362,13 +1366,13 @@
           }
         });
 
-        /* 2. BUILD 3D CAROUSEL CARDS (WINDOWED ON-DEMAND LOADING) */
+        /* 2. BUILD 3D CAROUSEL CARDS WITH INSTANT THUMBNAILS */
         photos.forEach((src, i) => {
-          const safeSrc = encodeURI(src);
+          const safeThumbSrc = encodeURI(getThumbSrc(src));
           const card = document.createElement('div');
           card.className = 'c3d-card';
           card.innerHTML = `
-        <img data-src="${safeSrc}" alt="Photo ${i + 1}" decoding="async">
+        <img data-src="${safeThumbSrc}" alt="Photo ${i + 1}" decoding="async">
         <div class="c3d-card-over">
           <span class="c3d-card-hint">Click to expand</span>
         </div>`;
@@ -1611,7 +1615,7 @@
         });
       }
 
-      /* LIGHTBOX WITH INSTANT PRELOADING & TOUCH SWIPE */
+      /* LIGHTBOX WITH PROGRESSIVE 4K RENDERING & INSTANT PRELOADING */
       const lb = document.getElementById('lb');
       const lbImg = document.getElementById('lb-img');
       const lbLoader = document.getElementById('lb-loader');
@@ -1631,23 +1635,29 @@
       function openLB(i) {
         if (activePhotos.length === 0) return;
         lbIdx = (i + activePhotos.length) % activePhotos.length;
-        const targetSrc = encodeURI(activePhotos[lbIdx]);
+        const targetFullSrc = encodeURI(activePhotos[lbIdx]);
+        const targetThumbSrc = encodeURI(getThumbSrc(activePhotos[lbIdx]));
         const currentReq = lbIdx;
 
-        const tempImg = lbCache[targetSrc] || new Image();
-        if (!lbCache[targetSrc]) {
-          tempImg.src = targetSrc;
-          lbCache[targetSrc] = tempImg;
+        // Instant placeholder: show the 30KB thumbnail immediately while 4K master loads
+        if (lbImg) {
+          lbImg.src = targetThumbSrc;
+          lbImg.style.opacity = '1';
+          lbImg.style.transform = 'scale(1)';
+        }
+
+        const tempImg = lbCache[targetFullSrc] || new Image();
+        if (!lbCache[targetFullSrc]) {
+          tempImg.src = targetFullSrc;
+          lbCache[targetFullSrc] = tempImg;
         }
 
         const showImage = () => {
           if (lbIdx === currentReq) {
-            lbImg.src = targetSrc;
-            lbImg.style.opacity = '1';
-            lbImg.style.transform = 'scale(1)';
+            lbImg.src = targetFullSrc;
             if (lbLoader) lbLoader.style.display = 'none';
 
-            // Preload next and prev photos instantly for zero lag
+            // Preload adjacent 4K photos in background
             preloadImg(activePhotos[(lbIdx + 1) % activePhotos.length]);
             preloadImg(activePhotos[(lbIdx - 1 + activePhotos.length) % activePhotos.length]);
           }
@@ -1665,8 +1675,8 @@
         lb.classList.add('open');
         document.body.style.overflow = 'hidden';
         if (lbDl) {
-          lbDl.href = targetSrc;
-          lbDl.download = targetSrc.split('/').pop();
+          lbDl.href = targetFullSrc;
+          lbDl.download = targetFullSrc.split('/').pop();
         }
       }
 
