@@ -9,3 +9,5 @@ Thumbs.db
 # Scratch & temporary files
 *.tmp
 *.log
+tools/
+
