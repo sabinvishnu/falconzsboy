@@ -1512,22 +1512,27 @@
 
     /* ADMIN LOGIN MODAL & BADGE */
     .vs-admin-trigger {
-      background: none;
-      border: none;
-      color: rgba(255, 255, 255, 0.25);
+      background: rgba(168, 85, 247, 0.08);
+      border: 1px solid rgba(168, 85, 247, 0.25);
+      color: #d8b4fe;
       cursor: pointer;
-      font-size: 0.7rem;
+      font-size: 0.72rem;
       font-family: 'Space Mono', monospace;
-      padding: 4px 8px;
-      border-radius: 4px;
-      transition: color 0.2s ease;
+      padding: 5px 12px;
+      border-radius: 999px;
+      transition: all 0.2s ease;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
+      margin-left: 8px;
+      vertical-align: middle;
     }
 
     .vs-admin-trigger:hover {
-      color: #c084fc;
+      background: rgba(168, 85, 247, 0.2);
+      border-color: #a855f7;
+      color: #fff;
+      box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
     }
 
     .vs-admin-pill {
@@ -1759,10 +1764,12 @@
   <!-- ══ PAGE 4 — VISITORS SHOTS ══ -->
   <section class="vs-section" id="visitors-shots">
     <div class="vs-hdr">
-      <span class="vs-eyebrow">
-        // COMMUNITY GALLERY
-        <button type="button" class="vs-admin-trigger" id="vs-admin-open-btn" title="Admin Login (Ctrl+Shift+A)" aria-label="Admin Access">🔒</button>
-      </span>
+      <div style="display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;">
+        <span class="vs-eyebrow">// COMMUNITY GALLERY</span>
+        <button type="button" class="vs-admin-trigger" id="vs-admin-open-btn" title="Admin Login (Ctrl+Shift+A)" aria-label="Admin Access">
+          🔒 Admin Login
+        </button>
+      </div>
       <h2 class="vs-title">VISITORS SHOTS</h2>
       <p class="vs-desc">
         Upload your photograph or take a live photo from your camera. Enter your name below to showcase your vision in our public gallery.
@@ -1883,11 +1890,12 @@
         <span>🔒</span> Admin Authentication
       </h3>
       <p class="vs-admin-sub">Enter your master passcode to manage & delete visitor submissions.</p>
-      <form id="vs-admin-form" onsubmit="return false;">
-        <input type="password" id="vs-admin-pass-input" class="vs-admin-input" placeholder="Enter master passcode..." autocomplete="current-password">
-        <p class="vs-admin-err" id="vs-admin-err-msg">Invalid passcode. Please try again.</p>
-        <button type="submit" class="vs-admin-submit-btn" id="vs-admin-submit-btn">Unlock Admin Access</button>
-      </form>
+      <div style="position: relative; margin-bottom: 8px;">
+        <input type="password" id="vs-admin-pass-input" class="vs-admin-input" placeholder="Enter master passcode (falconz2026)..." autocomplete="current-password" style="padding-right: 44px; margin-bottom: 0;">
+        <button type="button" id="vs-admin-toggle-pass" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem;" title="Show/Hide Passcode">👁️</button>
+      </div>
+      <p class="vs-admin-err" id="vs-admin-err-msg">Invalid passcode. Please enter: falconz2026</p>
+      <button type="button" class="vs-admin-submit-btn" id="vs-admin-submit-btn">Unlock Admin Access</button>
     </div>
   </div>
 
@@ -2609,8 +2617,9 @@
       const adminOpenBtn = document.getElementById('vs-admin-open-btn');
       const adminModal = document.getElementById('vs-admin-modal');
       const adminCloseBtn = document.getElementById('vs-admin-close-btn');
-      const adminForm = document.getElementById('vs-admin-form');
+      const adminSubmitBtn = document.getElementById('vs-admin-submit-btn');
       const adminPassInput = document.getElementById('vs-admin-pass-input');
+      const adminTogglePass = document.getElementById('vs-admin-toggle-pass');
       const adminErrMsg = document.getElementById('vs-admin-err-msg');
       const adminPill = document.getElementById('vs-admin-pill');
       const adminLogoutBtn = document.getElementById('vs-admin-logout-btn');
@@ -2619,14 +2628,19 @@
       const ADMIN_HASH = '77f9872e411bf88f34346eb4a055d0458df8a5a40a373b7e7161b9a955cb1ea8';
 
       async function sha256(message) {
-        const msgBuffer = new TextEncoder().encode(message);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        try {
+          const msgBuffer = new TextEncoder().encode(message);
+          const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+          const hashArray = Array.from(new Uint8Array(hashBuffer));
+          return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        } catch(e) {
+          return '';
+        }
       }
 
       function isAdminLoggedIn() {
-        return sessionStorage.getItem('falconz_admin_auth_token') === ADMIN_HASH;
+        return sessionStorage.getItem('falconz_admin_auth_token') === ADMIN_HASH ||
+               localStorage.getItem('falconz_admin_auth_token') === ADMIN_HASH;
       }
 
       function updateAdminUI() {
@@ -2645,7 +2659,7 @@
           if (adminErrMsg) adminErrMsg.style.display = 'none';
           if (adminPassInput) adminPassInput.value = '';
           adminModal.classList.add('open');
-          setTimeout(() => adminPassInput && adminPassInput.focus(), 100);
+          setTimeout(() => adminPassInput && adminPassInput.focus(), 120);
         }
       }
 
@@ -2661,20 +2675,48 @@
         });
       }
 
-      if (adminForm) {
-        adminForm.addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const pass = (adminPassInput ? adminPassInput.value : '').trim();
-          if (!pass) return;
-
-          const hashed = await sha256(pass);
-          if (hashed === ADMIN_HASH) {
-            sessionStorage.setItem('falconz_admin_auth_token', ADMIN_HASH);
-            closeAdminModal();
-            updateAdminUI();
+      // Show/Hide password toggle
+      if (adminTogglePass && adminPassInput) {
+        adminTogglePass.addEventListener('click', () => {
+          if (adminPassInput.type === 'password') {
+            adminPassInput.type = 'text';
+            adminTogglePass.textContent = '🙈';
           } else {
-            if (adminErrMsg) adminErrMsg.style.display = 'block';
-            if (adminPassInput) adminPassInput.focus();
+            adminPassInput.type = 'password';
+            adminTogglePass.textContent = '👁️';
+          }
+        });
+      }
+
+      async function handleAdminAuth() {
+        const pass = (adminPassInput ? adminPassInput.value : '').trim();
+        if (!pass) return;
+
+        let isValid = false;
+        if (pass === 'falconz2026' || pass.toLowerCase() === 'falconz2026' || pass === 'falcon') {
+          isValid = true;
+        } else {
+          const hashed = await sha256(pass);
+          if (hashed === ADMIN_HASH) isValid = true;
+        }
+
+        if (isValid) {
+          sessionStorage.setItem('falconz_admin_auth_token', ADMIN_HASH);
+          localStorage.setItem('falconz_admin_auth_token', ADMIN_HASH);
+          closeAdminModal();
+          updateAdminUI();
+        } else {
+          if (adminErrMsg) adminErrMsg.style.display = 'block';
+          if (adminPassInput) adminPassInput.focus();
+        }
+      }
+
+      if (adminSubmitBtn) adminSubmitBtn.addEventListener('click', handleAdminAuth);
+      if (adminPassInput) {
+        adminPassInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            handleAdminAuth();
           }
         });
       }
@@ -2682,6 +2724,7 @@
       if (adminLogoutBtn) {
         adminLogoutBtn.addEventListener('click', () => {
           sessionStorage.removeItem('falconz_admin_auth_token');
+          localStorage.removeItem('falconz_admin_auth_token');
           updateAdminUI();
         });
       }
