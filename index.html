@@ -1458,6 +1458,12 @@
       font-family: 'Space Mono', monospace;
     }
 
+    .vs-card-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
     .vs-like-btn {
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid rgba(255, 255, 255, 0.1);
@@ -1482,6 +1488,26 @@
 
     .vs-like-btn.liked svg {
       fill: #f87171;
+    }
+
+    .vs-del-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: .75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all .25s ease;
+    }
+
+    .vs-del-btn:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.5);
+      color: #f87171;
     }
   </style>
 </head>
@@ -2401,7 +2427,12 @@
       let rawImageObj = null;
       let camStream = null;
       let camFacingMode = 'environment';
-      const STORAGE_KEY = 'falconz_visitors_shots_v4';
+      const STORAGE_KEY = 'falconz_visitors_shots_v5';
+
+      // Automatically purge previous test uploads so gallery starts 100% clean
+      ['falconz_community_submissions_v1', 'falconz_visitors_shots_v1', 'falconz_visitors_shots_v2', 'falconz_visitors_shots_v3', 'falconz_visitors_shots_v4'].forEach(k => {
+        try { localStorage.removeItem(k); } catch(e){}
+      });
 
       // No default seed shots — empty until visitors submit
       const defaultShots = [];
@@ -2677,12 +2708,20 @@
                   <span class="vs-card-time">${item.time}</span>
                 </div>
               </div>
-              <button class="vs-like-btn ${item.liked ? 'liked' : ''}" data-idx="${idx}" aria-label="Like shot">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="${item.liked ? '#f87171' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                </svg>
-                <span class="like-cnt">${item.likes}</span>
-              </button>
+              <div class="vs-card-actions">
+                <button class="vs-like-btn ${item.liked ? 'liked' : ''}" data-idx="${idx}" aria-label="Like shot">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="${item.liked ? '#f87171' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                  </svg>
+                  <span class="like-cnt">${item.likes}</span>
+                </button>
+                <button class="vs-del-btn" data-idx="${idx}" title="Delete photo" aria-label="Delete this shot">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  </svg>
+                </button>
+              </div>
             </div>
           `;
 
@@ -2698,6 +2737,16 @@
                 s.likes = Math.max(0, s.likes - 1);
                 s.liked = false;
               }
+              saveShots(shots);
+              renderGallery();
+            });
+          }
+
+          const delBtn = card.querySelector('.vs-del-btn');
+          if (delBtn) {
+            delBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              shots.splice(idx, 1);
               saveShots(shots);
               renderGallery();
             });
