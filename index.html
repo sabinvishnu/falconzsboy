@@ -2769,18 +2769,19 @@
       const adminLogoutBtn = document.getElementById('vs-admin-logout-btn');
       const topAdminLogoutBtn = document.getElementById('top-admin-logout-btn');
 
-      // SHA-256 hash of the master passcode
-      const ADMIN_HASH = '77f9872e411bf88f34346eb4a055d0458df8a5a40a373b7e7161b9a955cb1ea8';
+      // SHA-256 hash of the master passcode ("1122")
+      const ADMIN_HASH = 'b3282a2f2a28757b3a18ab833de16a9c54518c0b0cf493e3f0a7cf09386f326a';
 
       async function sha256(message) {
         try {
-          const msgBuffer = new TextEncoder().encode(message);
-          const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-          const hashArray = Array.from(new Uint8Array(hashBuffer));
-          return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        } catch(e) {
-          return '';
-        }
+          if (window.crypto && window.crypto.subtle) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+          }
+        } catch(e) { }
+        return '';
       }
 
       function isAdminLoggedIn() {
@@ -2834,25 +2835,12 @@
         });
       }
 
-      // Show/Hide password toggle
-      if (adminTogglePass && adminPassInput) {
-        adminTogglePass.addEventListener('click', () => {
-          if (adminPassInput.type === 'password') {
-            adminPassInput.type = 'text';
-            adminTogglePass.textContent = '🙈';
-          } else {
-            adminPassInput.type = 'password';
-            adminTogglePass.textContent = '👁️';
-          }
-        });
-      }
-
       async function handleAdminAuth() {
         const pass = (adminPassInput ? adminPassInput.value : '').trim();
         if (!pass) return;
 
         const hashed = await sha256(pass);
-        if (hashed === ADMIN_HASH) {
+        if (hashed === ADMIN_HASH || pass === '1122') {
           sessionStorage.setItem('falconz_admin_auth_token', ADMIN_HASH);
           localStorage.setItem('falconz_admin_auth_token', ADMIN_HASH);
           closeAdminModal();
