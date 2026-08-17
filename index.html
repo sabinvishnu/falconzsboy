@@ -3153,8 +3153,10 @@
           const finalDataUrl = canvas.toDataURL('image/jpeg', 0.82);
 
           const timeString = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          const uniqueId = 'vs_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
 
           const shotPayload = {
+            id: uniqueId,
             name: name,
             imgData: finalDataUrl,
             fullImg: finalDataUrl,
@@ -3168,25 +3170,51 @@
           publishBtn.textContent = 'Publishing...';
 
           try {
-            if (typeof firebaseDb !== 'undefined' && firebaseDb) {
-              const docRef = await firebaseDb.collection('visitor_shots').add(shotPayload);
-              const likedSet = getLocalLikedSet();
-              likedSet.add(docRef.id);
-              saveLocalLikedSet(likedSet);
-            } else {
-              const newShot = {
-                id: 'vs_' + Date.now(),
-                ...shotPayload,
-                liked: true
-              };
-              shots.unshift(newShot);
-              saveShots(shots);
-              renderGallery();
+            // 1. Try Vercel Serverless KV Storage API
+            let vercelSuccess = false;
+            try {
+              const res = await fetch('/api/visitor-shots', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'publish', shot: shotPayload })
+              });
+              if (res.ok) {
+                const resData = await res.json();
+                if (resData.success) vercelSuccess = true;
+              }
+            } catch (vErr) {
+              console.log('Vercel API sync notice:', vErr);
             }
-          } catch (err) {
-            console.warn('Firestore upload notice (fallback local):', err);
+
+            // 2. Try Firebase if configured
+            if (typeof firebaseDb !== 'undefined' && firebaseDb) {
+              try {
+                const docRef = await firebaseDb.collection('visitor_shots').add(shotPayload);
+                const likedSet = getLocalLikedSet();
+                likedSet.add(docRef.id);
+                saveLocalLikedSet(likedSet);
+              } catch (fbErr) {
+                console.warn('Firestore upload note:', fbErr);
+              }
+            }
+
+            // 3. Update local state
+            const likedSet = getLocalLikedSet();
+            likedSet.add(uniqueId);
+            saveLocalLikedSet(likedSet);
+
             const newShot = {
-              id: 'vs_' + Date.now(),
+              ...shotPayload,
+              liked: true
+            };
+            // Prevent duplicates
+            shots = shots.filter(s => s.id !== uniqueId);
+            shots.unshift(newShot);
+            saveShots(shots);
+            renderGallery();
+          } catch (err) {
+            console.warn('Publish notice (fallback local):', err);
+            const newShot = {
               ...shotPayload,
               liked: true
             };
@@ -3212,8 +3240,52 @@
         });
       }
 
-      /* REALTIME FIREBASE LISTENER */
+      /* REALTIME CLOUD & FIREBASE SYNC */
+      async function fetchCloudShots() {
+        try {
+          const res = await fetch('/api/visitor-shots', { method: 'GET' });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && Array.isArray(data.shots) && data.shots.length > 0) {
+              const likedSet = getLocalLikedSet();
+              const cloudShots = data.shots.map(s => ({
+                id: s.id || ('vs_' + Date.now()),
+                name: s.name || 'Visitor',
+                imgData: s.imgData || s.fullImg || '',
+                fullImg: s.fullImg || s.imgData || '',
+                time: s.time || 'Recently',
+                likes: typeof s.likes === 'number' ? s.likes : 0,
+                liked: likedSet.has(s.id)
+              }));
+
+              // Merge with any offline local shots
+              const existingMap = new Map();
+              cloudShots.forEach(s => existingMap.set(s.id, s));
+              shots.forEach(s => {
+                if (!existingMap.has(s.id)) {
+                  existingMap.set(s.id, s);
+                }
+              });
+
+              shots = Array.from(existingMap.values());
+              saveShots(shots);
+              renderGallery();
+            }
+          }
+        } catch (e) {
+          // Offline or local development mode
+        }
+      }
+
       function initFirebaseSync() {
+        // Fetch from Vercel Cloud API on load
+        fetchCloudShots();
+
+        // Background polling every 25 seconds & on tab focus
+        setInterval(fetchCloudShots, 25000);
+        window.addEventListener('focus', fetchCloudShots);
+
+        // Also connect Firebase real-time listener if configured
         if (typeof firebaseDb !== 'undefined' && firebaseDb) {
           try {
             firebaseDb.collection('visitor_shots')
@@ -3310,6 +3382,7 @@
               if (!s) return;
               const likedSet = getLocalLikedSet();
               const isCurrentlyLiked = s.liked;
+              const delta = isCurrentlyLiked ? -1 : 1;
 
               if (isCurrentlyLiked) {
                 s.liked = false;
@@ -3323,10 +3396,20 @@
               saveLocalLikedSet(likedSet);
               renderGallery();
 
+              // Sync like to Vercel KV API
+              try {
+                fetch('/api/visitor-shots', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ action: 'like', id: s.id, delta })
+                }).catch(() => {});
+              } catch (vErr) {}
+
+              // Sync like to Firebase if available
               if (typeof firebaseDb !== 'undefined' && firebaseDb && s.id && !s.id.startsWith('vs_')) {
                 try {
                   await firebaseDb.collection('visitor_shots').doc(s.id).update({
-                    likes: firebase.firestore.FieldValue.increment(isCurrentlyLiked ? -1 : 1)
+                    likes: firebase.firestore.FieldValue.increment(delta)
                   });
                 } catch(err) {
                   console.warn('Like sync note:', err);
@@ -3350,6 +3433,15 @@
               if (!target) return;
 
               if (!confirm(`Delete photo by "${target.name}"?`)) return;
+
+              // Vercel KV Delete
+              try {
+                fetch('/api/visitor-shots', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ action: 'delete', id: target.id })
+                }).catch(() => {});
+              } catch (delApiErr) {}
 
               if (typeof firebaseDb !== 'undefined' && firebaseDb && target.id && !target.id.startsWith('vs_')) {
                 try {
