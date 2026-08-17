@@ -2036,6 +2036,11 @@
     <button class="lb-btn" id="lb-next" aria-label="Next">&#8594;</button>
   </div>
 
+  <!-- Firebase SDKs for Real-Time Global Visitor Shots Sync -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+
   <script>
     /* LOADER */
     (() => {
@@ -2668,10 +2673,13 @@
       function prevLB() { if (activePhotos.length === 0) return; lbIdx = (lbIdx - 1 + activePhotos.length) % activePhotos.length; openLB(lbIdx); }
       function nextLB() { if (activePhotos.length === 0) return; lbIdx = (lbIdx + 1) % activePhotos.length; openLB(lbIdx); }
 
-      document.getElementById('lb-x').addEventListener('click', closeLB);
-      document.getElementById('lb-prev').addEventListener('click', prevLB);
-      document.getElementById('lb-next').addEventListener('click', nextLB);
-      lb.addEventListener('click', e => { if (e.target === lb) closeLB(); });
+      const lbXBtn = document.getElementById('lb-x');
+      const lbPrevBtn = document.getElementById('lb-prev');
+      const lbNextBtn = document.getElementById('lb-next');
+      if (lbXBtn) lbXBtn.addEventListener('click', closeLB);
+      if (lbPrevBtn) lbPrevBtn.addEventListener('click', prevLB);
+      if (lbNextBtn) lbNextBtn.addEventListener('click', nextLB);
+      if (lb) lb.addEventListener('click', e => { if (e.target === lb) closeLB(); });
 
       /* Touch Swipe for Lightbox on Phone */
       let touchStartX = 0, touchStartY = 0, touchEndX = 0, touchEndY = 0;
@@ -2871,6 +2879,7 @@
       let camStream = null;
       let camFacingMode = 'environment';
       const STORAGE_KEY = 'falconz_visitors_shots_v5';
+      const LOCAL_LIKED_KEY = 'falconz_liked_shots_v1';
 
       // Automatically purge older versions
       ['falconz_community_submissions_v1', 'falconz_visitors_shots_v1', 'falconz_visitors_shots_v2', 'falconz_visitors_shots_v3', 'falconz_visitors_shots_v4'].forEach(k => {
@@ -2879,6 +2888,20 @@
 
       // No default seed shots — empty until visitors submit
       const defaultShots = [];
+
+      function getLocalLikedSet() {
+        try {
+          const raw = localStorage.getItem(LOCAL_LIKED_KEY);
+          if (raw) return new Set(JSON.parse(raw));
+        } catch (e) {}
+        return new Set();
+      }
+
+      function saveLocalLikedSet(set) {
+        try {
+          localStorage.setItem(LOCAL_LIKED_KEY, JSON.stringify(Array.from(set)));
+        } catch (e) {}
+      }
 
       function getStoredShots() {
         try {
@@ -3114,7 +3137,7 @@
 
       /* PUBLISH */
       if (publishBtn) {
-        publishBtn.addEventListener('click', () => {
+        publishBtn.addEventListener('click', async () => {
           const name = nameInput.value.trim();
           if (!name) {
             nameInput.classList.add('error');
@@ -3127,21 +3150,53 @@
           if (!canvas || !rawImageObj) return;
 
           renderWatermark();
-          const finalDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          const finalDataUrl = canvas.toDataURL('image/jpeg', 0.82);
 
-          const newShot = {
-            id: 'vs_' + Date.now(),
+          const timeString = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+          const shotPayload = {
             name: name,
             imgData: finalDataUrl,
             fullImg: finalDataUrl,
-            time: 'Just now',
+            time: timeString,
             likes: 1,
-            liked: true
+            timestamp: (typeof firebase !== 'undefined' && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : Date.now()
           };
 
-          shots.unshift(newShot);
-          saveShots(shots);
-          renderGallery();
+          publishBtn.disabled = true;
+          const origText = publishBtn.textContent;
+          publishBtn.textContent = 'Publishing...';
+
+          try {
+            if (typeof firebaseDb !== 'undefined' && firebaseDb) {
+              const docRef = await firebaseDb.collection('visitor_shots').add(shotPayload);
+              const likedSet = getLocalLikedSet();
+              likedSet.add(docRef.id);
+              saveLocalLikedSet(likedSet);
+            } else {
+              const newShot = {
+                id: 'vs_' + Date.now(),
+                ...shotPayload,
+                liked: true
+              };
+              shots.unshift(newShot);
+              saveShots(shots);
+              renderGallery();
+            }
+          } catch (err) {
+            console.warn('Firestore upload notice (fallback local):', err);
+            const newShot = {
+              id: 'vs_' + Date.now(),
+              ...shotPayload,
+              liked: true
+            };
+            shots.unshift(newShot);
+            saveShots(shots);
+            renderGallery();
+          } finally {
+            publishBtn.disabled = false;
+            publishBtn.textContent = origText;
+          }
 
           rawImageObj = null;
           if (fileInput) fileInput.value = '';
@@ -3155,6 +3210,38 @@
             }
           }
         });
+      }
+
+      /* REALTIME FIREBASE LISTENER */
+      function initFirebaseSync() {
+        if (typeof firebaseDb !== 'undefined' && firebaseDb) {
+          try {
+            firebaseDb.collection('visitor_shots')
+              .orderBy('timestamp', 'desc')
+              .limit(60)
+              .onSnapshot((snapshot) => {
+                const likedSet = getLocalLikedSet();
+                shots = snapshot.docs.map(doc => {
+                  const d = doc.data();
+                  return {
+                    id: doc.id,
+                    name: d.name || 'Visitor',
+                    imgData: d.imgData || '',
+                    fullImg: d.fullImg || d.imgData || '',
+                    time: d.time || 'Recently',
+                    likes: typeof d.likes === 'number' ? d.likes : 0,
+                    liked: likedSet.has(doc.id)
+                  };
+                });
+                saveShots(shots);
+                renderGallery();
+              }, (err) => {
+                console.warn('Firestore snapshot listener note:', err);
+              });
+          } catch (e) {
+            console.warn('Firestore init note:', e);
+          }
+        }
       }
 
       /* RENDER GALLERY */
@@ -3217,18 +3304,36 @@
 
           const likeBtn = card.querySelector('.vs-like-btn');
           if (likeBtn) {
-            likeBtn.addEventListener('click', (e) => {
+            likeBtn.addEventListener('click', async (e) => {
               e.stopPropagation();
               const s = shots[idx];
-              if (!s.liked) {
-                s.likes += 1;
-                s.liked = true;
-              } else {
-                s.likes = Math.max(0, s.likes - 1);
+              if (!s) return;
+              const likedSet = getLocalLikedSet();
+              const isCurrentlyLiked = s.liked;
+
+              if (isCurrentlyLiked) {
                 s.liked = false;
+                s.likes = Math.max(0, s.likes - 1);
+                likedSet.delete(s.id);
+              } else {
+                s.liked = true;
+                s.likes += 1;
+                likedSet.add(s.id);
               }
-              saveShots(shots);
+              saveLocalLikedSet(likedSet);
               renderGallery();
+
+              if (typeof firebaseDb !== 'undefined' && firebaseDb && s.id && !s.id.startsWith('vs_')) {
+                try {
+                  await firebaseDb.collection('visitor_shots').doc(s.id).update({
+                    likes: firebase.firestore.FieldValue.increment(isCurrentlyLiked ? -1 : 1)
+                  });
+                } catch(err) {
+                  console.warn('Like sync note:', err);
+                }
+              } else {
+                saveShots(shots);
+              }
             });
           }
 
@@ -3244,7 +3349,17 @@
               const target = shots[idx];
               if (!target) return;
 
-              // Protected Backend API Trigger
+              if (!confirm(`Delete photo by "${target.name}"?`)) return;
+
+              if (typeof firebaseDb !== 'undefined' && firebaseDb && target.id && !target.id.startsWith('vs_')) {
+                try {
+                  await firebaseDb.collection('visitor_shots').doc(target.id).delete();
+                } catch(e) {
+                  console.warn('Firebase delete note:', e);
+                }
+              }
+
+              // Protected Backend API Trigger if available
               try {
                 await fetch('/api/delete-shot', {
                   method: 'POST',
@@ -3255,7 +3370,7 @@
                   body: JSON.stringify({ id: target.id })
                 });
               } catch (apiErr) {
-                // Client fallback if offline / static preview
+                // Fallback
               }
 
               shots.splice(idx, 1);
@@ -3291,6 +3406,7 @@
         });
       }
 
+      initFirebaseSync();
       updateAdminUI();
     })();
   </script>
