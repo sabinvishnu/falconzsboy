@@ -844,6 +844,89 @@
       transform: scale(1.1);
     }
 
+    /* LIGHTBOX ADMIN DELETE BTN */
+    .lb-del {
+      position: absolute;
+      top: 24px;
+      right: 136px;
+      width: 46px;
+      height: 46px;
+      background: rgba(239, 68, 68, 0.14);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      border-radius: 50%;
+      color: #f87171;
+      font-size: 1rem;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      transition: all .3s ease;
+      z-index: 30;
+      cursor: pointer;
+    }
+
+    .lb-del:hover {
+      border-color: #ef4444;
+      color: #fff;
+      background: rgba(239, 68, 68, 0.45);
+      transform: scale(1.1);
+      box-shadow: 0 0 16px rgba(239, 68, 68, 0.5);
+    }
+
+    /* PORTFOLIO CARD ADMIN DELETE BTNS */
+    .g-del-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 25;
+      width: 32px;
+      height: 32px;
+      background: rgba(15, 17, 23, 0.9);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      border-radius: 50%;
+      color: #f87171;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: all .25s ease;
+      opacity: 0.85;
+    }
+
+    .g-del-btn:hover {
+      opacity: 1;
+      background: #ef4444;
+      color: #fff;
+      transform: scale(1.12);
+      box-shadow: 0 0 14px rgba(239, 68, 68, 0.6);
+    }
+
+    .c3d-del-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 35;
+      width: 34px;
+      height: 34px;
+      background: rgba(15, 17, 23, 0.9);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      border-radius: 50%;
+      color: #f87171;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: all .25s ease;
+    }
+
+    .c3d-del-btn:hover {
+      background: #ef4444;
+      color: #fff;
+      transform: scale(1.12);
+      box-shadow: 0 0 16px rgba(239, 68, 68, 0.7);
+    }
+
     @media(max-width:800px), (pointer: coarse) {
       body {
         cursor: auto !important
@@ -2028,6 +2111,12 @@
         <line x1="12" y1="15" x2="12" y2="3" />
       </svg>
     </a>
+    <button class="lb-del" id="lb-del" title="Admin Delete Photo" aria-label="Admin Delete Photo">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+      </svg>
+    </button>
     <button class="lb-btn" id="lb-prev" aria-label="Previous">&#8592;</button>
     <div class="lb-img-wrap">
       <div class="lb-loader" id="lb-loader"></div>
@@ -2092,6 +2181,133 @@
       obs.observe(el);
       setTimeout(() => el.classList.add('vis'), 1200);
     })();
+
+    /* ═════════════════════════════════════════════════════
+       SUPABASE CLIENT & ADMIN CORE INITIALIZATION
+       ═════════════════════════════════════════════════════ */
+    const SUPABASE_URL = 'https://uwimvqgzjcpzouioznaj.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_cVmCx67tLG1pkeB5_l6HFw_EJNuiNSJ';
+    let supabaseClient = null;
+
+    try {
+      if (window.supabase && typeof window.supabase.createClient === 'function') {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+    } catch (e) {
+      console.warn('Supabase initialization warning:', e);
+    }
+
+    // SHA-256 hash of the master passcode ("1122")
+    const ADMIN_HASH = 'b3282a2f2a28757b3a18ab833de16a9c54518c0b0cf493e3f0a7cf09386f326a';
+
+    function isAdminLoggedIn() {
+      return sessionStorage.getItem('falconz_admin_auth_token') === ADMIN_HASH ||
+             localStorage.getItem('falconz_admin_auth_token') === ADMIN_HASH;
+    }
+
+    /* PORTFOLIO DELETED ITEMS PERSISTENCE */
+    const DELETED_PORTFOLIO_KEY = 'falconz_deleted_portfolio_v2';
+
+    function getDeletedPortfolioSet() {
+      try {
+        const raw = localStorage.getItem(DELETED_PORTFOLIO_KEY);
+        if (raw) return new Set(JSON.parse(raw));
+      } catch (e) {}
+      return new Set();
+    }
+
+    function saveDeletedPortfolioSet(set) {
+      try {
+        localStorage.setItem(DELETED_PORTFOLIO_KEY, JSON.stringify(Array.from(set)));
+      } catch (e) {}
+    }
+
+    let refreshPortfolioGallery = null;
+    let renderVisitorGallery = null;
+
+    function updateAdminUI() {
+      const loggedIn = isAdminLoggedIn();
+      
+      const adminPill = document.getElementById('vs-admin-pill');
+      const adminOpenBtn = document.getElementById('vs-admin-open-btn');
+      const topAdminPill = document.getElementById('top-admin-pill');
+      const topAdminOpenBtn = document.getElementById('top-admin-open-btn');
+
+      if (adminPill) {
+        if (loggedIn) adminPill.classList.add('active');
+        else adminPill.classList.remove('active');
+      }
+      if (adminOpenBtn) {
+        adminOpenBtn.style.display = loggedIn ? 'none' : 'inline-flex';
+      }
+
+      if (topAdminPill) {
+        if (loggedIn) topAdminPill.classList.add('active');
+        else topAdminPill.classList.remove('active');
+      }
+      if (topAdminOpenBtn) {
+        topAdminOpenBtn.style.display = loggedIn ? 'none' : 'inline-flex';
+      }
+
+      if (typeof refreshPortfolioGallery === 'function') {
+        refreshPortfolioGallery();
+      }
+      if (typeof renderVisitorGallery === 'function') {
+        renderVisitorGallery();
+      }
+    }
+
+    async function deletePortfolioPhoto(src) {
+      if (!isAdminLoggedIn()) {
+        alert('Unauthorized: Admin access required.');
+        return;
+      }
+      const filename = src.split('/').pop();
+      if (!confirm(`Admin Action: Are you sure you want to delete "${filename}" from the gallery?`)) return;
+
+      const deletedSet = getDeletedPortfolioSet();
+      deletedSet.add(src);
+      saveDeletedPortfolioSet(deletedSet);
+
+      if (supabaseClient) {
+        try {
+          await supabaseClient.from('deleted_portfolio_photos').insert([{ photo_path: src }]);
+        } catch (e) {
+          console.warn('Supabase portfolio delete sync note:', e);
+        }
+      }
+
+      const lb = document.getElementById('lb');
+      if (lb && lb.classList.contains('open')) {
+        lb.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+
+      if (typeof refreshPortfolioGallery === 'function') {
+        refreshPortfolioGallery();
+      }
+    }
+
+    async function fetchSupabaseDeletedPortfolio() {
+      if (!supabaseClient) return;
+      try {
+        const { data, error } = await supabaseClient.from('deleted_portfolio_photos').select('photo_path');
+        if (!error && Array.isArray(data) && data.length > 0) {
+          const deletedSet = getDeletedPortfolioSet();
+          let changed = false;
+          data.forEach(item => {
+            if (item.photo_path && !deletedSet.has(item.photo_path)) {
+              deletedSet.add(item.photo_path);
+              changed = true;
+            }
+          });
+          if (changed) {
+            saveDeletedPortfolioSet(deletedSet);
+            if (typeof refreshPortfolioGallery === 'function') refreshPortfolioGallery();
+          }
+        }
+      } catch (e) {}
+    }
 
     /* GALLERY PHOTO COLLECTIONS (Optimized WebP - 93.3% smaller, 4K crisp) */
     const editedPhotos = [
@@ -2279,7 +2495,12 @@
       const catEdited = document.getElementById('cat-edited');
       const catUnedited = document.getElementById('cat-unedited');
 
-      let activePhotos = editedPhotos;
+      function getFilteredPhotos(list) {
+        const deletedSet = getDeletedPortfolioSet();
+        return list.filter(p => !deletedSet.has(p));
+      }
+
+      let activePhotos = getFilteredPhotos(editedPhotos);
       let curIdx = 0;
       let lbIdx = 0;
       let cCards = [];
@@ -2321,6 +2542,8 @@
           return;
         }
 
+        const isAuthAdmin = isAdminLoggedIn();
+
         /* 1. BUILD GRID WITH ULTRA-FAST 30KB THUMBNAILS */
         gridObserver = new IntersectionObserver((entries) => {
           entries.forEach(entry => {
@@ -2343,6 +2566,20 @@
           <div class="g-over"></div>
           <div class="g-shine"></div>
         </div>`;
+
+          if (isAuthAdmin) {
+            const delBtn = document.createElement('button');
+            delBtn.className = 'g-del-btn';
+            delBtn.title = 'Delete photo (Admin)';
+            delBtn.setAttribute('aria-label', 'Delete photo');
+            delBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`;
+            delBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              deletePortfolioPhoto(src);
+            });
+            item.appendChild(delBtn);
+          }
+
           item.addEventListener('click', () => openLB(i));
           gridEl.appendChild(item);
 
@@ -2363,6 +2600,20 @@
         <div class="c3d-card-over">
           <span class="c3d-card-hint">Click to expand</span>
         </div>`;
+
+          if (isAuthAdmin) {
+            const cDelBtn = document.createElement('button');
+            cDelBtn.className = 'c3d-del-btn';
+            cDelBtn.title = 'Delete photo (Admin)';
+            cDelBtn.setAttribute('aria-label', 'Delete photo');
+            cDelBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`;
+            cDelBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              deletePortfolioPhoto(src);
+            });
+            card.appendChild(cDelBtn);
+          }
+
           card.addEventListener('click', () => {
             if (curIdx === i) {
               openLB(i);
@@ -2404,18 +2655,26 @@
         update3D();
       }
 
+      refreshPortfolioGallery = () => {
+        const isUnedited = catUnedited && catUnedited.classList.contains('active');
+        activePhotos = getFilteredPhotos(isUnedited ? uneditedPhotos : editedPhotos);
+        buildGallery(activePhotos);
+        const lbDel = document.getElementById('lb-del');
+        if (lbDel) lbDel.style.display = isAdminLoggedIn() ? 'flex' : 'none';
+      };
+
       /* CATEGORY SWITCHING */
       if (catEdited && catUnedited) {
         catEdited.addEventListener('click', () => {
           catEdited.classList.add('active');
           catUnedited.classList.remove('active');
-          activePhotos = editedPhotos;
+          activePhotos = getFilteredPhotos(editedPhotos);
           buildGallery(activePhotos);
         });
         catUnedited.addEventListener('click', () => {
           catUnedited.classList.add('active');
           catEdited.classList.remove('active');
-          activePhotos = uneditedPhotos;
+          activePhotos = getFilteredPhotos(uneditedPhotos);
           buildGallery(activePhotos);
         });
       }
@@ -2486,6 +2745,7 @@
 
       /* INITIAL BUILD */
       buildGallery(activePhotos);
+      fetchSupabaseDeletedPortfolio();
 
       /* NAV BUTTONS */
       const prevBtn = document.getElementById('c3d-prev');
@@ -2607,6 +2867,7 @@
       const lbImg = document.getElementById('lb-img');
       const lbLoader = document.getElementById('lb-loader');
       const lbDl = document.getElementById('lb-dl');
+      const lbDel = document.getElementById('lb-del');
       const lbCache = {};
 
       function preloadImg(src) {
@@ -2631,6 +2892,10 @@
           lbImg.src = targetThumbSrc;
           lbImg.style.opacity = '1';
           lbImg.style.transform = 'scale(1)';
+        }
+
+        if (lbDel) {
+          lbDel.style.display = isAdminLoggedIn() ? 'flex' : 'none';
         }
 
         const tempImg = lbCache[targetFullSrc] || new Image();
@@ -2678,6 +2943,14 @@
       if (lbPrevBtn) lbPrevBtn.addEventListener('click', prevLB);
       if (lbNextBtn) lbNextBtn.addEventListener('click', nextLB);
       if (lb) lb.addEventListener('click', e => { if (e.target === lb) closeLB(); });
+
+      if (lbDel) {
+        lbDel.addEventListener('click', () => {
+          if (activePhotos.length > 0 && activePhotos[lbIdx]) {
+            deletePortfolioPhoto(activePhotos[lbIdx]);
+          }
+        });
+      }
 
       /* Touch Swipe for Lightbox on Phone */
       let touchStartX = 0, touchStartY = 0, touchEndX = 0, touchEndY = 0;
@@ -2760,9 +3033,6 @@
       const adminLogoutBtn = document.getElementById('vs-admin-logout-btn');
       const topAdminLogoutBtn = document.getElementById('top-admin-logout-btn');
 
-      // SHA-256 hash of the master passcode ("1122")
-      const ADMIN_HASH = 'b3282a2f2a28757b3a18ab833de16a9c54518c0b0cf493e3f0a7cf09386f326a';
-
       async function sha256(message) {
         try {
           if (window.crypto && window.crypto.subtle) {
@@ -2773,35 +3043,6 @@
           }
         } catch(e) { }
         return '';
-      }
-
-      function isAdminLoggedIn() {
-        return sessionStorage.getItem('falconz_admin_auth_token') === ADMIN_HASH ||
-               localStorage.getItem('falconz_admin_auth_token') === ADMIN_HASH;
-      }
-
-      function updateAdminUI() {
-        const loggedIn = isAdminLoggedIn();
-        
-        // Sync Visitor section controls
-        if (adminPill) {
-          if (loggedIn) adminPill.classList.add('active');
-          else adminPill.classList.remove('active');
-        }
-        if (adminOpenBtn) {
-          adminOpenBtn.style.display = loggedIn ? 'none' : 'inline-flex';
-        }
-
-        // Sync Top Navigation controls
-        if (topAdminPill) {
-          if (loggedIn) topAdminPill.classList.add('active');
-          else topAdminPill.classList.remove('active');
-        }
-        if (topAdminOpenBtn) {
-          topAdminOpenBtn.style.display = loggedIn ? 'none' : 'inline-flex';
-        }
-
-        renderGallery();
       }
 
       function openAdminModal() {
@@ -3489,6 +3730,7 @@
         });
       }
 
+      renderVisitorGallery = renderGallery;
       initSupabaseSync();
       updateAdminUI();
     })();
