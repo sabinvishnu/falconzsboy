@@ -2036,10 +2036,8 @@
     <button class="lb-btn" id="lb-next" aria-label="Next">&#8594;</button>
   </div>
 
-  <!-- Firebase SDKs for Real-Time Global Visitor Shots Sync -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js"></script>
+  <!-- Supabase JS Client for Real-Time Public Visitor Photos Gallery -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
     /* LOADER */
@@ -3135,6 +3133,58 @@
         });
       }
 
+      /* ═════════════════════════════════════════════════════
+         SUPABASE CLIENT INITIALIZATION
+         ═════════════════════════════════════════════════════ */
+      const SUPABASE_URL = 'https://uwimvqgzjcpzouioznaj.supabase.co';
+      const SUPABASE_ANON_KEY = 'sb_publishable_cVmCx67tLG1pkeB5_l6HFw_EJNuiNSJ';
+      let supabaseClient = null;
+
+      try {
+        if (window.supabase && typeof window.supabase.createClient === 'function') {
+          supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+      } catch (e) {
+        console.warn('Supabase initialization warning:', e);
+      }
+
+      /* HELPER: Upload Image to Supabase Storage or return DataURL */
+      async function uploadPhotoToStorage(uniqueId, dataUrl) {
+        if (!supabaseClient) return dataUrl;
+        try {
+          const res = await fetch(dataUrl);
+          const blob = await res.blob();
+          const fileName = `visitor_${uniqueId}_${Date.now()}.jpg`;
+
+          let uploadRes = await supabaseClient.storage.from('visitor_photos').upload(fileName, blob, {
+            contentType: 'image/jpeg',
+            cacheControl: '3600',
+            upsert: false
+          });
+
+          if (uploadRes.error && uploadRes.error.message && uploadRes.error.message.includes('Bucket not found')) {
+            uploadRes = await supabaseClient.storage.from('visitor_shots').upload(fileName, blob, {
+              contentType: 'image/jpeg',
+              cacheControl: '3600',
+              upsert: false
+            });
+          }
+
+          if (!uploadRes.error) {
+            const bucketName = uploadRes.data?.fullPath ? uploadRes.data.fullPath.split('/')[0] : 'visitor_photos';
+            const { data: publicData } = supabaseClient.storage.from(bucketName).getPublicUrl(fileName);
+            if (publicData && publicData.publicUrl) {
+              return publicData.publicUrl;
+            }
+          } else {
+            console.warn('Supabase storage upload note:', uploadRes.error);
+          }
+        } catch (err) {
+          console.warn('Storage upload error, using direct image data:', err);
+        }
+        return dataUrl;
+      }
+
       /* PUBLISH */
       if (publishBtn) {
         publishBtn.addEventListener('click', async () => {
@@ -3150,72 +3200,67 @@
           if (!canvas || !rawImageObj) return;
 
           renderWatermark();
-          const finalDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+          const finalDataUrl = canvas.toDataURL('image/jpeg', 0.85);
 
           const timeString = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
           const uniqueId = 'vs_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
-
-          const shotPayload = {
-            id: uniqueId,
-            name: name,
-            imgData: finalDataUrl,
-            fullImg: finalDataUrl,
-            time: timeString,
-            likes: 1,
-            timestamp: (typeof firebase !== 'undefined' && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : Date.now()
-          };
 
           publishBtn.disabled = true;
           const origText = publishBtn.textContent;
           publishBtn.textContent = 'Publishing...';
 
           try {
-            // 1. Try Vercel Serverless KV Storage API
-            let vercelSuccess = false;
-            try {
-              const res = await fetch('/api/visitor-shots', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'publish', shot: shotPayload })
-              });
-              if (res.ok) {
-                const resData = await res.json();
-                if (resData.success) vercelSuccess = true;
-              }
-            } catch (vErr) {
-              console.log('Vercel API sync notice:', vErr);
-            }
+            // 1. Upload photo to Supabase Storage (or get public URL / optimized data)
+            const finalImgUrl = await uploadPhotoToStorage(uniqueId, finalDataUrl);
 
-            // 2. Try Firebase if configured
-            if (typeof firebaseDb !== 'undefined' && firebaseDb) {
-              try {
-                const docRef = await firebaseDb.collection('visitor_shots').add(shotPayload);
-                const likedSet = getLocalLikedSet();
-                likedSet.add(docRef.id);
-                saveLocalLikedSet(likedSet);
-              } catch (fbErr) {
-                console.warn('Firestore upload note:', fbErr);
+            const shotRecord = {
+              id: uniqueId,
+              name: name,
+              img_url: finalImgUrl,
+              time_str: timeString,
+              likes: 1
+            };
+
+            // 2. Insert into Supabase DB Table
+            if (supabaseClient) {
+              const { error: dbErr } = await supabaseClient.from('visitor_shots').insert([shotRecord]);
+              if (dbErr) {
+                console.warn('Supabase DB Insert notice:', dbErr);
               }
             }
 
-            // 3. Update local state
+            // 3. Mark as liked locally by uploader
             const likedSet = getLocalLikedSet();
             likedSet.add(uniqueId);
             saveLocalLikedSet(likedSet);
 
             const newShot = {
-              ...shotPayload,
+              id: uniqueId,
+              name: name,
+              imgData: finalImgUrl,
+              fullImg: finalImgUrl,
+              time: timeString,
+              likes: 1,
               liked: true
             };
-            // Prevent duplicates
+
             shots = shots.filter(s => s.id !== uniqueId);
             shots.unshift(newShot);
             saveShots(shots);
             renderGallery();
           } catch (err) {
-            console.warn('Publish notice (fallback local):', err);
+            console.error('Publish error:', err);
+            const likedSet = getLocalLikedSet();
+            likedSet.add(uniqueId);
+            saveLocalLikedSet(likedSet);
+
             const newShot = {
-              ...shotPayload,
+              id: uniqueId,
+              name: name,
+              imgData: finalDataUrl,
+              fullImg: finalDataUrl,
+              time: timeString,
+              likes: 1,
               liked: true
             };
             shots.unshift(newShot);
@@ -3240,80 +3285,55 @@
         });
       }
 
-      /* REALTIME CLOUD & FIREBASE SYNC */
-      async function fetchCloudShots() {
+      /* REALTIME SUPABASE CLOUD SYNC */
+      async function fetchSupabaseShots() {
+        if (!supabaseClient) return;
         try {
-          const res = await fetch('/api/visitor-shots', { method: 'GET' });
-          if (res.ok) {
-            const data = await res.json();
-            if (data.success && Array.isArray(data.shots) && data.shots.length > 0) {
-              const likedSet = getLocalLikedSet();
-              const cloudShots = data.shots.map(s => ({
-                id: s.id || ('vs_' + Date.now()),
-                name: s.name || 'Visitor',
-                imgData: s.imgData || s.fullImg || '',
-                fullImg: s.fullImg || s.imgData || '',
-                time: s.time || 'Recently',
-                likes: typeof s.likes === 'number' ? s.likes : 0,
-                liked: likedSet.has(s.id)
-              }));
+          const { data, error } = await supabaseClient
+            .from('visitor_shots')
+            .select('*')
+            .order('created_at', { ascending: false });
 
-              // Merge with any offline local shots
-              const existingMap = new Map();
-              cloudShots.forEach(s => existingMap.set(s.id, s));
-              shots.forEach(s => {
-                if (!existingMap.has(s.id)) {
-                  existingMap.set(s.id, s);
-                }
-              });
-
-              shots = Array.from(existingMap.values());
-              saveShots(shots);
-              renderGallery();
-            }
+          if (!error && Array.isArray(data)) {
+            const likedSet = getLocalLikedSet();
+            shots = data.map(item => ({
+              id: item.id,
+              name: item.name || 'Visitor',
+              imgData: item.img_url || '',
+              fullImg: item.img_url || '',
+              time: item.time_str || 'Recently',
+              likes: typeof item.likes === 'number' ? item.likes : 0,
+              liked: likedSet.has(item.id)
+            }));
+            saveShots(shots);
+            renderGallery();
           }
         } catch (e) {
-          // Offline or local development mode
+          console.warn('Offline or sync note:', e);
         }
       }
 
-      function initFirebaseSync() {
-        // Fetch from Vercel Cloud API on load
-        fetchCloudShots();
+      function initSupabaseSync() {
+        // Initial fetch on load
+        fetchSupabaseShots();
 
-        // Background polling every 25 seconds & on tab focus
-        setInterval(fetchCloudShots, 25000);
-        window.addEventListener('focus', fetchCloudShots);
-
-        // Also connect Firebase real-time listener if configured
-        if (typeof firebaseDb !== 'undefined' && firebaseDb) {
+        // Realtime Subscription
+        if (supabaseClient) {
           try {
-            firebaseDb.collection('visitor_shots')
-              .orderBy('timestamp', 'desc')
-              .limit(60)
-              .onSnapshot((snapshot) => {
-                const likedSet = getLocalLikedSet();
-                shots = snapshot.docs.map(doc => {
-                  const d = doc.data();
-                  return {
-                    id: doc.id,
-                    name: d.name || 'Visitor',
-                    imgData: d.imgData || '',
-                    fullImg: d.fullImg || d.imgData || '',
-                    time: d.time || 'Recently',
-                    likes: typeof d.likes === 'number' ? d.likes : 0,
-                    liked: likedSet.has(doc.id)
-                  };
-                });
-                saveShots(shots);
-                renderGallery();
-              }, (err) => {
-                console.warn('Firestore snapshot listener note:', err);
-              });
-          } catch (e) {
-            console.warn('Firestore init note:', e);
+            supabaseClient
+              .channel('public_visitor_shots')
+              .on('postgres_changes', { event: '*', schema: 'public', table: 'visitor_shots' }, () => {
+                fetchSupabaseShots();
+              })
+              .subscribe();
+          } catch (rtErr) {
+            console.warn('Realtime subscription note:', rtErr);
           }
         }
+
+        // Background polling every 20 seconds & on tab focus
+        setInterval(fetchSupabaseShots, 20000);
+        window.addEventListener('focus', fetchSupabaseShots);
       }
 
       /* RENDER GALLERY */
@@ -3396,24 +3416,15 @@
               saveLocalLikedSet(likedSet);
               renderGallery();
 
-              // Sync like to Vercel KV API
-              try {
-                fetch('/api/visitor-shots', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ action: 'like', id: s.id, delta })
-                }).catch(() => {});
-              } catch (vErr) {}
-
-              // Sync like to Firebase if available
-              if (typeof firebaseDb !== 'undefined' && firebaseDb && s.id && !s.id.startsWith('vs_')) {
-                try {
-                  await firebaseDb.collection('visitor_shots').doc(s.id).update({
-                    likes: firebase.firestore.FieldValue.increment(delta)
+              // Sync like to Supabase
+              if (supabaseClient) {
+                supabaseClient
+                  .from('visitor_shots')
+                  .update({ likes: s.likes })
+                  .eq('id', s.id)
+                  .then(({ error }) => {
+                    if (error) console.warn('Like sync error:', error);
                   });
-                } catch(err) {
-                  console.warn('Like sync note:', err);
-                }
               } else {
                 saveShots(shots);
               }
@@ -3434,35 +3445,15 @@
 
               if (!confirm(`Delete photo by "${target.name}"?`)) return;
 
-              // Vercel KV Delete
-              try {
-                fetch('/api/visitor-shots', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ action: 'delete', id: target.id })
-                }).catch(() => {});
-              } catch (delApiErr) {}
-
-              if (typeof firebaseDb !== 'undefined' && firebaseDb && target.id && !target.id.startsWith('vs_')) {
-                try {
-                  await firebaseDb.collection('visitor_shots').doc(target.id).delete();
-                } catch(e) {
-                  console.warn('Firebase delete note:', e);
-                }
-              }
-
-              // Protected Backend API Trigger if available
-              try {
-                await fetch('/api/delete-shot', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${sessionStorage.getItem('falconz_admin_auth_token')}`
-                  },
-                  body: JSON.stringify({ id: target.id })
-                });
-              } catch (apiErr) {
-                // Fallback
+              // Supabase Delete
+              if (supabaseClient) {
+                supabaseClient
+                  .from('visitor_shots')
+                  .delete()
+                  .eq('id', target.id)
+                  .then(({ error }) => {
+                    if (error) console.warn('Supabase delete error:', error);
+                  });
               }
 
               shots.splice(idx, 1);
@@ -3498,7 +3489,7 @@
         });
       }
 
-      initFirebaseSync();
+      initSupabaseSync();
       updateAdminUI();
     })();
   </script>
