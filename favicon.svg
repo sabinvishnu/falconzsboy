@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Radial Gradient -->
+    <radialGradient id="bgGlow" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#1e1035"/>
+      <stop offset="55%" stop-color="#0d091a"/>
+      <stop offset="100%" stop-color="#05030a"/>
+    </radialGradient>
+
+    <!-- Outer Border Gradient -->
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c084fc" stop-opacity="0.8"/>
+      <stop offset="50%" stop-color="#a855f7" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.7"/>
+    </linearGradient>
+
+    <!-- Primary Falcon Wing Gradient -->
+    <linearGradient id="wingGradLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e879f9"/>
+      <stop offset="40%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+
+    <linearGradient id="wingGradRight" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="40%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+
+    <!-- Falcon Head & Center Gradient -->
+    <linearGradient id="headGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="40%" stop-color="#e9d5ff"/>
+      <stop offset="100%" stop-color="#c084fc"/>
+    </linearGradient>
+
+    <!-- Shutter / Lens Gradients -->
+    <linearGradient id="shutterGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c084fc"/>
+      <stop offset="100%" stop-color="#7e22ce"/>
+    </linearGradient>
+    <linearGradient id="shutterGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="lensCore" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#c084fc"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+
+    <!-- Glow Filter -->
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="24" result="blur2"/>
+      <feComposite in="SourceGraphic" in2="blur2" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Base Dark Squircle -->
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="url(#bgGlow)" stroke="url(#borderGrad)" stroke-width="6"/>
+
+  <!-- Ambient Light Aura behind the falcon -->
+  <circle cx="256" cy="245" r="140" fill="#a855f7" opacity="0.15" filter="url(#softGlow)"/>
+  <circle cx="256" cy="275" r="85" fill="#38bdf8" opacity="0.12" filter="url(#neonGlow)"/>
+
+  <!-- FALCON ICONOGRAPHY -->
+  <g id="falcon-group">
+    <!-- Left Wing Feathers -->
+    <!-- Outer Primary Wing -->
+    <path d="M 256 182 C 220 120 152 78 72 74 C 70 128 92 195 142 242 C 168 266 200 282 232 290 C 206 250 196 200 256 182 Z" 
+          fill="url(#wingGradLeft)"/>
+    
+    <!-- Secondary Wing Blade (Left) -->
+    <path d="M 230 292 C 182 278 136 240 108 190 C 98 230 114 278 152 312 C 184 340 226 352 248 356 C 234 330 226 308 230 292 Z" 
+          fill="url(#wingGradLeft)" opacity="0.85"/>
+
+    <!-- Left Lower Feather Accent -->
+    <path d="M 244 360 C 206 354 168 328 142 294 C 152 328 178 364 212 384 C 232 396 248 402 256 404 C 250 388 246 374 244 360 Z" 
+          fill="url(#wingGradLeft)" opacity="0.6"/>
+
+    <!-- Right Wing Feathers -->
+    <!-- Outer Primary Wing -->
+    <path d="M 256 182 C 292 120 360 78 440 74 C 442 128 420 195 370 242 C 344 266 312 282 280 290 C 306 250 316 200 256 182 Z" 
+          fill="url(#wingGradRight)"/>
+    
+    <!-- Secondary Wing Blade (Right) -->
+    <path d="M 282 292 C 330 278 376 240 404 190 C 414 230 398 278 360 312 C 328 340 286 352 264 356 C 278 330 286 308 282 292 Z" 
+          fill="url(#wingGradRight)" opacity="0.85"/>
+
+    <!-- Right Lower Feather Accent -->
+    <path d="M 268 360 C 306 354 344 328 370 294 C 360 328 334 364 300 384 C 280 396 264 402 256 404 C 262 388 266 374 268 360 Z" 
+          fill="url(#wingGradRight)" opacity="0.6"/>
+
+    <!-- Tail Diamond / Keel -->
+    <polygon points="256,406 246,446 256,462 266,446" fill="url(#lensCore)"/>
+
+    <!-- Falcon Head & Crest (Top Center) -->
+    <path d="M 256 92 L 272 136 L 286 148 L 268 156 L 274 182 L 256 200 L 238 182 L 244 156 L 226 148 L 240 136 Z" 
+          fill="url(#headGrad)" filter="url(#neonGlow)"/>
+
+    <!-- Sharp Falcon Beak Focus Point -->
+    <polygon points="256,192 250,214 256,224 262,214" fill="#ffffff"/>
+
+    <!-- CAMERA SHUTTER / APERTURE EYE (Center Core) -->
+    <!-- Outer Lens Ring -->
+    <circle cx="256" cy="275" r="72" fill="#090614" stroke="url(#borderGrad)" stroke-width="4"/>
+
+    <!-- Interlocking 6 Aperture Blades -->
+    <g transform="translate(256, 275)">
+      <!-- Blade 1 -->
+      <path d="M 0 -64 C 28 -64 54 -40 56 -16 L 16 0 C 14 -18 2 -32 -14 -38 Z" fill="url(#shutterGrad1)" opacity="0.95"/>
+      <!-- Blade 2 -->
+      <path d="M 0 -64 C 28 -64 54 -40 56 -16 L 16 0 C 14 -18 2 -32 -14 -38 Z" transform="rotate(60)" fill="url(#shutterGrad2)" opacity="0.95"/>
+      <!-- Blade 3 -->
+      <path d="M 0 -64 C 28 -64 54 -40 56 -16 L 16 0 C 14 -18 2 -32 -14 -38 Z" transform="rotate(120)" fill="url(#shutterGrad1)" opacity="0.95"/>
+      <!-- Blade 4 -->
+      <path d="M 0 -64 C 28 -64 54 -40 56 -16 L 16 0 C 14 -18 2 -32 -14 -38 Z" transform="rotate(180)" fill="url(#shutterGrad2)" opacity="0.95"/>
+      <!-- Blade 5 -->
+      <path d="M 0 -64 C 28 -64 54 -40 56 -16 L 16 0 C 14 -18 2 -32 -14 -38 Z" transform="rotate(240)" fill="url(#shutterGrad1)" opacity="0.95"/>
+      <!-- Blade 6 -->
+      <path d="M 0 -64 C 28 -64 54 -40 56 -16 L 16 0 C 14 -18 2 -32 -14 -38 Z" transform="rotate(300)" fill="url(#shutterGrad2)" opacity="0.95"/>
+
+      <!-- Center Lens Optical Element -->
+      <circle cx="0" cy="0" r="22" fill="#040208" stroke="#a855f7" stroke-width="2.5"/>
+      <circle cx="0" cy="0" r="14" fill="url(#lensCore)"/>
+      <circle cx="-4" cy="-4" r="4" fill="#ffffff" opacity="0.9"/>
+      
+      <!-- Crosshairs / Reticle accents -->
+      <line x1="-36" y1="0" x2="-26" y2="0" stroke="#c084fc" stroke-width="2" stroke-linecap="round"/>
+      <line x1="26" y1="0" x2="36" y2="0" stroke="#c084fc" stroke-width="2" stroke-linecap="round"/>
+      <line x1="0" y1="-36" x2="0" y2="-26" stroke="#c084fc" stroke-width="2" stroke-linecap="round"/>
+      <line x1="0" y1="26" x2="0" y2="36" stroke="#c084fc" stroke-width="2" stroke-linecap="round"/>
+    </g>
+
+    <!-- Top Crown Light Sparkle -->
+    <polygon points="256,66 259,76 269,79 259,82 256,92 253,82 243,79 253,76" fill="#ffffff"/>
+  </g>
+</svg>

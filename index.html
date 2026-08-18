@@ -7,6 +7,14 @@
   <title>FALCONZ BOY — Photography</title>
   <meta name="description" content="Sabin Vishnu — Photography portfolio.">
   <meta name="google-site-verification" content="prqBx4pkaa4xOUf1_mu0_SwOH1g7FqNyQC8mai5k7Tc">
+  <meta name="theme-color" content="#000000">
+
+  <!-- Favicon & App Icons -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -2567,19 +2575,6 @@
           <div class="g-shine"></div>
         </div>`;
 
-          if (isAuthAdmin) {
-            const delBtn = document.createElement('button');
-            delBtn.className = 'g-del-btn';
-            delBtn.title = 'Delete photo (Admin)';
-            delBtn.setAttribute('aria-label', 'Delete photo');
-            delBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`;
-            delBtn.addEventListener('click', (e) => {
-              e.stopPropagation();
-              deletePortfolioPhoto(src);
-            });
-            item.appendChild(delBtn);
-          }
-
           item.addEventListener('click', () => openLB(i));
           gridEl.appendChild(item);
 
@@ -2600,19 +2595,6 @@
         <div class="c3d-card-over">
           <span class="c3d-card-hint">Click to expand</span>
         </div>`;
-
-          if (isAuthAdmin) {
-            const cDelBtn = document.createElement('button');
-            cDelBtn.className = 'c3d-del-btn';
-            cDelBtn.title = 'Delete photo (Admin)';
-            cDelBtn.setAttribute('aria-label', 'Delete photo');
-            cDelBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`;
-            cDelBtn.addEventListener('click', (e) => {
-              e.stopPropagation();
-              deletePortfolioPhoto(src);
-            });
-            card.appendChild(cDelBtn);
-          }
 
           card.addEventListener('click', () => {
             if (curIdx === i) {
