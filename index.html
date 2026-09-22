@@ -2284,13 +2284,6 @@
     <button class="lb-btn" id="lb-next" aria-label="Next">&#8594;</button>
   </div>
 
-  <!-- Firebase SDK (compat) for Auth, Firestore & Storage -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-  <script src="js/firebase-config.js"></script>
-
   <script>
     /* LOADER */
     (() => {
@@ -2346,139 +2339,20 @@
     })();
 
     /* ═════════════════════════════════════════════════════
-       FIREBASE CLIENT & ADMIN CORE INITIALIZATION
+       ADMIN CORE INITIALIZATION (PIN AUTH)
        ═════════════════════════════════════════════════════ */
-    const db = window.firebaseDb || null;
-    const fbAuth = window.firebaseAuth || ((typeof firebase !== 'undefined') ? firebase.auth() : null);
-    const fbStorage = window.firebaseStorage || ((typeof firebase !== 'undefined') ? firebase.storage() : null);
-    window.fbDb = db;
-    window.fbAuth = fbAuth;
-    window.fbStorage = fbStorage;
-    if (db) console.log('🔥 Firebase ready — Firestore, Auth & Storage connected.');
-
     // SHA-256 hash of the master passcode ("1122")
     const ADMIN_HASH = 'b3282a2f2a28757b3a18ab833de16a9c54518c0b0cf493e3f0a7cf09386f326a';
 
-    // Authorized Admin Google Accounts (Add your Google email here)
-    const ADMIN_EMAILS = [
-      'sabinvishnu@gmail.com',
-      'falconzboy@gmail.com',
-      'sabin@falconzboy.in'
-    ];
-
-    let currentAuthUser = null;
-
     function isAdminLoggedIn() {
-      // 1. PIN-based authentication
-      const hasPin = sessionStorage.getItem('falconz_admin_auth_token') === ADMIN_HASH ||
-                     localStorage.getItem('falconz_admin_auth_token') === ADMIN_HASH;
-      if (hasPin) return true;
-
-      // 2. Google OAuth Admin authentication
-      if (currentAuthUser && currentAuthUser.email) {
-        const email = currentAuthUser.email.toLowerCase().trim();
-        return ADMIN_EMAILS.some(e => e.toLowerCase().trim() === email);
-      }
-
-      return false;
+      return sessionStorage.getItem('falconz_admin_auth_token') === ADMIN_HASH ||
+             localStorage.getItem('falconz_admin_auth_token') === ADMIN_HASH;
     }
 
-    /* FIREBASE GOOGLE AUTH HANDLER */
-    async function signInWithGoogle() {
-      if (!fbAuth) {
-        alert('Firebase Auth is not initialized. Please verify firebase-config.js.');
-        return;
-      }
-      try {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        await fbAuth.signInWithPopup(provider);
-      } catch (err) {
-        console.error('Google Sign-In exception:', err);
-        alert('Authentication error: ' + (err.message || err));
-      }
-    }
-
-    async function signOutAuth() {
+    function signOutAuth() {
       sessionStorage.removeItem('falconz_admin_auth_token');
       localStorage.removeItem('falconz_admin_auth_token');
-      if (fbAuth) {
-        try {
-          await fbAuth.signOut();
-        } catch (e) {
-          console.warn('Firebase signOut note:', e);
-        }
-      }
-      currentAuthUser = null;
-      handleAuthUserChange(null);
       updateAdminUI();
-    }
-
-    function handleAuthUserChange(user) {
-      currentAuthUser = user;
-      window.currentAuthUser = user;
-
-      // Update Visitor Studio UI
-      const guestBox = document.getElementById('vs-visitor-guest-box');
-      const userBox = document.getElementById('vs-visitor-user-box');
-      const nameInput = document.getElementById('vs-name-input');
-      const avatarImg = document.getElementById('vs-user-avatar-img');
-      const dispName = document.getElementById('vs-user-display-name');
-      const dispEmail = document.getElementById('vs-user-display-email');
-
-      if (user) {
-        const fullName = user.displayName || (user.email ? user.email.split('@')[0] : 'Creator');
-        const avatarUrl = user.photoURL || '';
-
-        if (guestBox) guestBox.style.display = 'none';
-        if (userBox) userBox.style.display = 'flex';
-        if (nameInput) {
-          nameInput.value = fullName;
-          nameInput.readOnly = true;
-          nameInput.style.opacity = '0.85';
-        }
-        if (avatarImg) {
-          if (avatarUrl) {
-            avatarImg.src = avatarUrl;
-            avatarImg.style.display = 'block';
-          } else {
-            avatarImg.style.display = 'none';
-          }
-        }
-        if (dispName) {
-          dispName.innerHTML = `${fullName} <span class="vs-verified-badge">✓ Verified</span>`;
-        }
-        if (dispEmail) {
-          dispEmail.textContent = user.email || '';
-        }
-
-        // Auto close admin modal if user is authorized admin
-        if (isAdminLoggedIn()) {
-          const adminModal = document.getElementById('vs-admin-modal');
-          if (adminModal && adminModal.classList.contains('open')) {
-            adminModal.classList.remove('open');
-          }
-        }
-      } else {
-        if (guestBox) guestBox.style.display = 'flex';
-        if (userBox) userBox.style.display = 'none';
-        if (nameInput) {
-          nameInput.readOnly = false;
-          nameInput.style.opacity = '1';
-        }
-      }
-
-      updateAdminUI();
-    }
-
-    function initFirebaseAuth() {
-      if (!fbAuth) return;
-      try {
-        fbAuth.onAuthStateChanged((user) => {
-          handleAuthUserChange(user || null);
-        });
-      } catch (e) {
-        console.warn('Firebase auth state listener notice:', e);
-      }
     }
 
     /* PORTFOLIO DELETED ITEMS PERSISTENCE */
@@ -3653,37 +3527,8 @@
       }
 
       /* ═════════════════════════════════════════════════════
-         FIREBASE CLIENT REFERENCE
+         VISITOR SHOTS ENGINE
          ═════════════════════════════════════════════════════ */
-      const getDb = () => window.firebaseDb || window.fbDb || ((typeof firebase !== 'undefined') ? firebase.firestore() : null);
-      const getStorage = () => window.firebaseStorage || window.fbStorage || ((typeof firebase !== 'undefined') ? firebase.storage() : null);
-
-      /* Compress canvas for fallback dataUrl if Storage upload fails */
-      function getCompressedFallback(maxSize = 720, quality = 0.72) {
-        if (!canvas) return null;
-        try {
-          const c = document.createElement('canvas');
-          let w = canvas.width;
-          let h = canvas.height;
-          if (w > maxSize || h > maxSize) {
-            if (w > h) { h = Math.round((h * maxSize) / w); w = maxSize; }
-            else { w = Math.round((w * maxSize) / h); h = maxSize; }
-          }
-          c.width = w;
-          c.height = h;
-          const ctx = c.getContext('2d');
-          ctx.drawImage(canvas, 0, 0, w, h);
-          return c.toDataURL('image/jpeg', quality);
-        } catch (e) {
-          return null;
-        }
-      }
-
-      /* HELPER: Prepare photo for Firestore (optimized ~35KB, works 100% on free Spark plan) */
-      async function uploadPhotoToStorage(uniqueId, dataUrl) {
-        // Use optimized photo directly so it never requires paid Blaze plan or bucket setup
-        return getCompressedFallback(720, 0.75) || dataUrl;
-      }
 
       /* PUBLISH */
       if (publishBtn) {
@@ -3710,41 +3555,6 @@
           publishBtn.textContent = 'Publishing...';
 
           try {
-            // 1. Upload photo to Firebase Storage (or get public URL)
-            let finalImgUrl = await uploadPhotoToStorage(uniqueId, finalDataUrl);
-            if (!finalImgUrl) {
-              // Fall back to compressed image data if storage is blocked/pending
-              finalImgUrl = getCompressedFallback(680, 0.70) || finalDataUrl;
-            }
-
-            const authAvatar = currentAuthUser ? (currentAuthUser.photoURL || '') : '';
-            const shotRecord = {
-              id: uniqueId,
-              name: name,
-              img_url: finalImgUrl,
-              time_str: timeString,
-              likes: 1,
-              user_id: currentAuthUser ? currentAuthUser.uid : null,
-              user_email: currentAuthUser ? currentAuthUser.email : null,
-              avatar_url: authAvatar || null,
-              created_at: new Date().toISOString()
-            };
-
-            // 2. Insert into Firebase Firestore with 6s timeout
-            const currentDb = getDb();
-            if (currentDb) {
-              try {
-                const dbPromise = currentDb.collection('visitor_shots').doc(uniqueId).set(shotRecord);
-                const dbTimeout = new Promise((_, reject) =>
-                  setTimeout(() => reject(new Error('Firestore insert timeout')), 6000)
-                );
-                await Promise.race([dbPromise, dbTimeout]);
-              } catch (dbErr) {
-                console.warn('Firebase DB Insert notice:', dbErr.message || dbErr);
-              }
-            }
-
-            // 3. Mark as liked locally by uploader
             const likedSet = getLocalLikedSet();
             likedSet.add(uniqueId);
             saveLocalLikedSet(likedSet);
@@ -3752,13 +3562,12 @@
             const newShot = {
               id: uniqueId,
               name: name,
-              avatar_url: authAvatar,
-              imgData: finalImgUrl,
-              fullImg: finalImgUrl,
+              imgData: finalDataUrl,
+              fullImg: finalDataUrl,
               time: timeString,
               likes: 1,
               liked: true,
-              created_at: shotRecord.created_at
+              created_at: new Date().toISOString()
             };
 
             shots = shots.filter(s => s.id !== uniqueId);
@@ -3776,7 +3585,7 @@
             setTimeout(() => {
               publishBtn.disabled = false;
               publishBtn.textContent = origText;
-            }, 1200);
+            }, 1000);
 
             if (vsGrid) {
               const firstCard = vsGrid.querySelector('.vs-card');
@@ -3786,117 +3595,10 @@
             }
           } catch (err) {
             console.error('Publish error:', err);
-            const likedSet = getLocalLikedSet();
-            likedSet.add(uniqueId);
-            saveLocalLikedSet(likedSet);
-
-            const fallbackImg = getCompressedFallback(680, 0.70) || finalDataUrl;
-            const newShot = {
-              id: uniqueId,
-              name: name,
-              imgData: fallbackImg,
-              fullImg: fallbackImg,
-              time: timeString,
-              likes: 1,
-              liked: true
-            };
-            shots.unshift(newShot);
-            saveShots(shots);
-            renderGallery();
-
-            rawImageObj = null;
-            if (fileInput) fileInput.value = '';
-            if (nativeCamInput) nativeCamInput.value = '';
-            if (previewBox) previewBox.style.display = 'none';
-
             publishBtn.disabled = false;
             publishBtn.textContent = origText;
-          } finally {
-            setTimeout(() => {
-              if (publishBtn.disabled) {
-                publishBtn.disabled = false;
-                publishBtn.textContent = origText;
-              }
-            }, 1500);
           }
         });
-      }
-
-      /* REALTIME FIREBASE CLOUD SYNC */
-      async function fetchFirebaseShots() {
-        const db = getDb();
-        if (!db) {
-          console.warn('Firestore db not ready yet');
-          return;
-        }
-        try {
-          let snapshot;
-          try {
-            // Try with ordering (requires Firestore index)
-            snapshot = await db.collection('visitor_shots')
-              .orderBy('created_at', 'desc')
-              .limit(80)
-              .get();
-          } catch (indexErr) {
-            // Index not ready yet — fetch all and sort client-side
-            console.info('Firestore index not ready, using client-side sort:', indexErr.message);
-            snapshot = await db.collection('visitor_shots').limit(80).get();
-          }
-
-          const likedSet = getLocalLikedSet();
-          shots = [];
-          snapshot.forEach(doc => {
-            const item = doc.data();
-            shots.push({
-              id: item.id || doc.id,
-              name: item.name || 'Visitor',
-              avatar_url: item.avatar_url || '',
-              imgData: item.img_url || '',
-              fullImg: item.img_url || '',
-              time: item.time_str || 'Recently',
-              likes: typeof item.likes === 'number' ? item.likes : 0,
-              liked: likedSet.has(item.id || doc.id),
-              created_at: item.created_at || ''
-            });
-          });
-          // Always sort newest first client-side
-          shots.sort((a, b) => (b.created_at > a.created_at ? 1 : -1));
-          saveShots(shots);
-          renderGallery();
-        } catch (e) {
-          console.error('Firebase fetch error:', e.code, e.message);
-        }
-      }
-
-      function initFirebaseSync() {
-        // Initial fetch on load
-        fetchFirebaseShots();
-
-        // Real-time listener using Firestore onSnapshot (fallback to polling)
-        const db = getDb();
-        if (db) {
-          try {
-            const trySnapshot = (query) => {
-              query.onSnapshot(() => {
-                fetchFirebaseShots();
-              }, (err) => {
-                console.info('Firestore snapshot fallback (index pending):', err.message);
-                // Fall back to polling if onSnapshot fails
-              });
-            };
-            try {
-              trySnapshot(db.collection('visitor_shots').orderBy('created_at', 'desc').limit(80));
-            } catch (e) {
-              trySnapshot(db.collection('visitor_shots').limit(80));
-            }
-          } catch (rtErr) {
-            console.warn('Realtime subscription note:', rtErr);
-          }
-        }
-
-        // Background polling every 20 seconds & on tab focus
-        setInterval(fetchFirebaseShots, 20000);
-        window.addEventListener('focus', fetchFirebaseShots);
       }
 
       /* RENDER GALLERY */
@@ -3982,15 +3684,7 @@
               saveLocalLikedSet(likedSet);
               renderGallery();
 
-              // Sync like to Firebase Firestore
-              const currentDb = getDb();
-              if (currentDb) {
-                currentDb.collection('visitor_shots').doc(s.id)
-                  .update({ likes: s.likes })
-                  .catch(err => console.warn('Like sync error:', err));
-              } else {
-                saveShots(shots);
-              }
+              saveShots(shots);
             });
           }
 
@@ -4007,14 +3701,6 @@
               if (!target) return;
 
               if (!confirm(`Delete photo by "${target.name}"?`)) return;
-
-              // Firebase Firestore Delete
-              const currentDb = getDb();
-              if (currentDb) {
-                currentDb.collection('visitor_shots').doc(target.id)
-                  .delete()
-                  .catch(err => console.warn('Firebase delete error:', err));
-              }
 
               shots.splice(idx, 1);
               saveShots(shots);
@@ -4050,8 +3736,7 @@
       }
 
       renderVisitorGallery = renderGallery;
-      initFirebaseSync();
-      initFirebaseAuth();
+      renderGallery();
       updateAdminUI();
     })();
   </script>
