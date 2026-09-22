@@ -1776,6 +1776,151 @@
       box-shadow: 0 6px 20px rgba(168, 85, 247, 0.35);
     }
 
+    /* Google Firebase Auth Styles */
+    .vs-google-auth-btn {
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 8px;
+      padding: 11px 16px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-sizing: border-box;
+      text-decoration: none;
+    }
+
+    .vs-google-auth-btn:hover {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: rgba(168, 85, 247, 0.6);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 16px rgba(168, 85, 247, 0.2);
+    }
+
+    .vs-google-auth-btn svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    .vs-auth-divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 16px 0 14px;
+      color: rgba(232, 236, 239, 0.4);
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .vs-auth-divider::before,
+    .vs-auth-divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .vs-auth-divider:not(:empty)::before {
+      margin-right: 10px;
+    }
+
+    .vs-auth-divider:not(:empty)::after {
+      margin-left: 10px;
+    }
+
+    /* Visitor Studio Google Auth Banner & User Profile */
+    .vs-visitor-auth-banner {
+      background: rgba(168, 85, 247, 0.06);
+      border: 1px solid rgba(168, 85, 247, 0.2);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .vs-visitor-auth-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .vs-user-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 1.5px solid #a855f7;
+      object-fit: cover;
+      background: #181824;
+      flex-shrink: 0;
+    }
+
+    .vs-user-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .vs-user-name {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .vs-verified-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #a855f7;
+      color: #fff;
+      font-size: 9px;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .vs-user-email {
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+    }
+
+    .vs-auth-signout-btn {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: var(--muted);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+
+    .vs-auth-signout-btn:hover {
+      border-color: #ef4444;
+      color: #ef4444;
+    }
+
     /* TOP NAVIGATION BAR (LOCKED TO FIRST PAGE TOP) */
     .top-nav {
       position: absolute;
@@ -1997,6 +2142,7 @@
 
     <!-- SUBMISSION STUDIO -->
     <div class="vs-studio" id="vs-studio">
+
       <div class="vs-input-group">
         <label for="vs-name-input" class="vs-label">
           <span>Your Name</span>
@@ -2103,11 +2249,13 @@
       <button class="vs-admin-close" id="vs-admin-close-btn" aria-label="Close Admin Modal">&times;</button>
       <h3 class="vs-admin-title">Admin Authentication</h3>
       <p class="vs-admin-sub">Authorized admin access only.</p>
+
+
       <div style="margin-bottom: 8px;">
         <input type="password" id="vs-admin-pass-input" class="vs-admin-input" placeholder="••••••••••••" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
       </div>
       <p class="vs-admin-err" id="vs-admin-err-msg">Access denied.</p>
-      <button type="button" class="vs-admin-submit-btn" id="vs-admin-submit-btn">Unlock Admin Access</button>
+      <button type="button" class="vs-admin-submit-btn" id="vs-admin-submit-btn">Unlock with PIN</button>
     </div>
   </div>
 
@@ -2136,8 +2284,12 @@
     <button class="lb-btn" id="lb-next" aria-label="Next">&#8594;</button>
   </div>
 
-  <!-- Supabase JS Client for Real-Time Public Visitor Photos Gallery -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Firebase SDK (compat) for Auth, Firestore & Storage -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
 
   <script>
     /* LOADER */
@@ -2194,26 +2346,139 @@
     })();
 
     /* ═════════════════════════════════════════════════════
-       SUPABASE CLIENT & ADMIN CORE INITIALIZATION
+       FIREBASE CLIENT & ADMIN CORE INITIALIZATION
        ═════════════════════════════════════════════════════ */
-    const SUPABASE_URL = 'https://uwimvqgzjcpzouioznaj.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_cVmCx67tLG1pkeB5_l6HFw_EJNuiNSJ';
-    let supabaseClient = null;
-
-    try {
-      if (window.supabase && typeof window.supabase.createClient === 'function') {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      }
-    } catch (e) {
-      console.warn('Supabase initialization warning:', e);
-    }
+    const db = window.firebaseDb || null;
+    const fbAuth = window.firebaseAuth || ((typeof firebase !== 'undefined') ? firebase.auth() : null);
+    const fbStorage = window.firebaseStorage || ((typeof firebase !== 'undefined') ? firebase.storage() : null);
+    window.fbDb = db;
+    window.fbAuth = fbAuth;
+    window.fbStorage = fbStorage;
+    if (db) console.log('🔥 Firebase ready — Firestore, Auth & Storage connected.');
 
     // SHA-256 hash of the master passcode ("1122")
     const ADMIN_HASH = 'b3282a2f2a28757b3a18ab833de16a9c54518c0b0cf493e3f0a7cf09386f326a';
 
+    // Authorized Admin Google Accounts (Add your Google email here)
+    const ADMIN_EMAILS = [
+      'sabinvishnu@gmail.com',
+      'falconzboy@gmail.com',
+      'sabin@falconzboy.in'
+    ];
+
+    let currentAuthUser = null;
+
     function isAdminLoggedIn() {
-      return sessionStorage.getItem('falconz_admin_auth_token') === ADMIN_HASH ||
-             localStorage.getItem('falconz_admin_auth_token') === ADMIN_HASH;
+      // 1. PIN-based authentication
+      const hasPin = sessionStorage.getItem('falconz_admin_auth_token') === ADMIN_HASH ||
+                     localStorage.getItem('falconz_admin_auth_token') === ADMIN_HASH;
+      if (hasPin) return true;
+
+      // 2. Google OAuth Admin authentication
+      if (currentAuthUser && currentAuthUser.email) {
+        const email = currentAuthUser.email.toLowerCase().trim();
+        return ADMIN_EMAILS.some(e => e.toLowerCase().trim() === email);
+      }
+
+      return false;
+    }
+
+    /* FIREBASE GOOGLE AUTH HANDLER */
+    async function signInWithGoogle() {
+      if (!fbAuth) {
+        alert('Firebase Auth is not initialized. Please verify firebase-config.js.');
+        return;
+      }
+      try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        await fbAuth.signInWithPopup(provider);
+      } catch (err) {
+        console.error('Google Sign-In exception:', err);
+        alert('Authentication error: ' + (err.message || err));
+      }
+    }
+
+    async function signOutAuth() {
+      sessionStorage.removeItem('falconz_admin_auth_token');
+      localStorage.removeItem('falconz_admin_auth_token');
+      if (fbAuth) {
+        try {
+          await fbAuth.signOut();
+        } catch (e) {
+          console.warn('Firebase signOut note:', e);
+        }
+      }
+      currentAuthUser = null;
+      handleAuthUserChange(null);
+      updateAdminUI();
+    }
+
+    function handleAuthUserChange(user) {
+      currentAuthUser = user;
+      window.currentAuthUser = user;
+
+      // Update Visitor Studio UI
+      const guestBox = document.getElementById('vs-visitor-guest-box');
+      const userBox = document.getElementById('vs-visitor-user-box');
+      const nameInput = document.getElementById('vs-name-input');
+      const avatarImg = document.getElementById('vs-user-avatar-img');
+      const dispName = document.getElementById('vs-user-display-name');
+      const dispEmail = document.getElementById('vs-user-display-email');
+
+      if (user) {
+        const fullName = user.displayName || (user.email ? user.email.split('@')[0] : 'Creator');
+        const avatarUrl = user.photoURL || '';
+
+        if (guestBox) guestBox.style.display = 'none';
+        if (userBox) userBox.style.display = 'flex';
+        if (nameInput) {
+          nameInput.value = fullName;
+          nameInput.readOnly = true;
+          nameInput.style.opacity = '0.85';
+        }
+        if (avatarImg) {
+          if (avatarUrl) {
+            avatarImg.src = avatarUrl;
+            avatarImg.style.display = 'block';
+          } else {
+            avatarImg.style.display = 'none';
+          }
+        }
+        if (dispName) {
+          dispName.innerHTML = `${fullName} <span class="vs-verified-badge">✓ Verified</span>`;
+        }
+        if (dispEmail) {
+          dispEmail.textContent = user.email || '';
+        }
+
+        // Auto close admin modal if user is authorized admin
+        if (isAdminLoggedIn()) {
+          const adminModal = document.getElementById('vs-admin-modal');
+          if (adminModal && adminModal.classList.contains('open')) {
+            adminModal.classList.remove('open');
+          }
+        }
+      } else {
+        if (guestBox) guestBox.style.display = 'flex';
+        if (userBox) userBox.style.display = 'none';
+        if (nameInput) {
+          nameInput.readOnly = false;
+          nameInput.style.opacity = '1';
+        }
+      }
+
+      updateAdminUI();
+    }
+
+    function initFirebaseAuth() {
+      if (!fbAuth) return;
+      try {
+        fbAuth.onAuthStateChanged((user) => {
+          handleAuthUserChange(user || null);
+        });
+      } catch (e) {
+        console.warn('Firebase auth state listener notice:', e);
+      }
     }
 
     /* PORTFOLIO DELETED ITEMS PERSISTENCE */
@@ -2245,16 +2510,34 @@
       const topAdminOpenBtn = document.getElementById('top-admin-open-btn');
 
       if (adminPill) {
-        if (loggedIn) adminPill.classList.add('active');
-        else adminPill.classList.remove('active');
+        if (loggedIn) {
+          adminPill.classList.add('active');
+          const badge = adminPill.querySelector('.vs-admin-badge');
+          if (badge) {
+            badge.textContent = currentAuthUser && currentAuthUser.email
+              ? `Admin (${currentAuthUser.email.split('@')[0]})`
+              : 'Admin Mode Active';
+          }
+        } else {
+          adminPill.classList.remove('active');
+        }
       }
       if (adminOpenBtn) {
         adminOpenBtn.style.display = loggedIn ? 'none' : 'inline-flex';
       }
 
       if (topAdminPill) {
-        if (loggedIn) topAdminPill.classList.add('active');
-        else topAdminPill.classList.remove('active');
+        if (loggedIn) {
+          topAdminPill.classList.add('active');
+          const topBadge = topAdminPill.querySelector('.vs-admin-badge');
+          if (topBadge) {
+            topBadge.textContent = currentAuthUser && currentAuthUser.email
+              ? `Admin (${currentAuthUser.email.split('@')[0]})`
+              : 'Admin Mode Active';
+          }
+        } else {
+          topAdminPill.classList.remove('active');
+        }
       }
       if (topAdminOpenBtn) {
         topAdminOpenBtn.style.display = loggedIn ? 'none' : 'inline-flex';
@@ -2280,11 +2563,11 @@
       deletedSet.add(src);
       saveDeletedPortfolioSet(deletedSet);
 
-      if (supabaseClient) {
+      if (db) {
         try {
-          await supabaseClient.from('deleted_portfolio_photos').insert([{ photo_path: src }]);
+          await db.collection('deleted_portfolio_photos').add({ photo_path: src, deleted_at: new Date().toISOString() });
         } catch (e) {
-          console.warn('Supabase portfolio delete sync note:', e);
+          console.warn('Firebase portfolio delete sync note:', e);
         }
       }
 
@@ -2299,14 +2582,15 @@
       }
     }
 
-    async function fetchSupabaseDeletedPortfolio() {
-      if (!supabaseClient) return;
+    async function fetchFirebaseDeletedPortfolio() {
+      if (!db) return;
       try {
-        const { data, error } = await supabaseClient.from('deleted_portfolio_photos').select('photo_path');
-        if (!error && Array.isArray(data) && data.length > 0) {
+        const snapshot = await db.collection('deleted_portfolio_photos').get();
+        if (!snapshot.empty) {
           const deletedSet = getDeletedPortfolioSet();
           let changed = false;
-          data.forEach(item => {
+          snapshot.forEach(doc => {
+            const item = doc.data();
             if (item.photo_path && !deletedSet.has(item.photo_path)) {
               deletedSet.add(item.photo_path);
               changed = true;
@@ -2730,7 +3014,7 @@
 
       /* INITIAL BUILD */
       buildGallery(activePhotos);
-      fetchSupabaseDeletedPortfolio();
+      fetchFirebaseDeletedPortfolio();
 
       /* NAV BUTTONS */
       const prevBtn = document.getElementById('c3d-prev');
@@ -3068,6 +3352,17 @@
         }
       }
 
+      // Admin Google Sign-In button
+      const adminGoogleBtn = document.getElementById('vs-admin-google-btn');
+      if (adminGoogleBtn) adminGoogleBtn.addEventListener('click', signInWithGoogle);
+
+      // Visitor Google Sign-In & Sign-Out buttons
+      const visitorGoogleBtn = document.getElementById('vs-visitor-google-btn');
+      if (visitorGoogleBtn) visitorGoogleBtn.addEventListener('click', signInWithGoogle);
+
+      const visitorSignoutBtn = document.getElementById('vs-visitor-signout-btn');
+      if (visitorSignoutBtn) visitorSignoutBtn.addEventListener('click', signOutAuth);
+
       if (adminSubmitBtn) adminSubmitBtn.addEventListener('click', handleAdminAuth);
       if (adminPassInput) {
         adminPassInput.addEventListener('keydown', (e) => {
@@ -3079,9 +3374,7 @@
       }
 
       function handleAdminLogout() {
-        sessionStorage.removeItem('falconz_admin_auth_token');
-        localStorage.removeItem('falconz_admin_auth_token');
-        updateAdminUI();
+        signOutAuth();
       }
 
       if (adminLogoutBtn) adminLogoutBtn.addEventListener('click', handleAdminLogout);
@@ -3360,53 +3653,24 @@
       }
 
       /* ═════════════════════════════════════════════════════
-         SUPABASE CLIENT INITIALIZATION
+         FIREBASE CLIENT REFERENCE
          ═════════════════════════════════════════════════════ */
-      const SUPABASE_URL = 'https://uwimvqgzjcpzouioznaj.supabase.co';
-      const SUPABASE_ANON_KEY = 'sb_publishable_cVmCx67tLG1pkeB5_l6HFw_EJNuiNSJ';
-      let supabaseClient = null;
+      const db = window.fbDb || window.firebaseDb || null;
+      const fbStorage = window.fbStorage || ((typeof firebase !== 'undefined') ? firebase.storage() : null);
 
-      try {
-        if (window.supabase && typeof window.supabase.createClient === 'function') {
-          supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        }
-      } catch (e) {
-        console.warn('Supabase initialization warning:', e);
-      }
-
-      /* HELPER: Upload Image to Supabase Storage or return DataURL */
+      /* HELPER: Upload Image to Firebase Storage or return DataURL */
       async function uploadPhotoToStorage(uniqueId, dataUrl) {
-        if (!supabaseClient) return dataUrl;
+        if (!fbStorage) return dataUrl;
         try {
           const res = await fetch(dataUrl);
           const blob = await res.blob();
-          const fileName = `visitor_${uniqueId}_${Date.now()}.jpg`;
-
-          let uploadRes = await supabaseClient.storage.from('visitor_photos').upload(fileName, blob, {
-            contentType: 'image/jpeg',
-            cacheControl: '3600',
-            upsert: false
-          });
-
-          if (uploadRes.error && uploadRes.error.message && uploadRes.error.message.includes('Bucket not found')) {
-            uploadRes = await supabaseClient.storage.from('visitor_shots').upload(fileName, blob, {
-              contentType: 'image/jpeg',
-              cacheControl: '3600',
-              upsert: false
-            });
-          }
-
-          if (!uploadRes.error) {
-            const bucketName = uploadRes.data?.fullPath ? uploadRes.data.fullPath.split('/')[0] : 'visitor_photos';
-            const { data: publicData } = supabaseClient.storage.from(bucketName).getPublicUrl(fileName);
-            if (publicData && publicData.publicUrl) {
-              return publicData.publicUrl;
-            }
-          } else {
-            console.warn('Supabase storage upload note:', uploadRes.error);
-          }
+          const fileName = `visitor_photos/visitor_${uniqueId}_${Date.now()}.jpg`;
+          const storageRef = fbStorage.ref(fileName);
+          const snapshot = await storageRef.put(blob, { contentType: 'image/jpeg' });
+          const publicUrl = await snapshot.ref.getDownloadURL();
+          return publicUrl;
         } catch (err) {
-          console.warn('Storage upload error, using direct image data:', err);
+          console.warn('Firebase Storage upload error, using direct image data:', err);
         }
         return dataUrl;
       }
@@ -3436,22 +3700,28 @@
           publishBtn.textContent = 'Publishing...';
 
           try {
-            // 1. Upload photo to Supabase Storage (or get public URL / optimized data)
+            // 1. Upload photo to Firebase Storage (or get public URL / optimized data)
             const finalImgUrl = await uploadPhotoToStorage(uniqueId, finalDataUrl);
 
+            const authAvatar = currentAuthUser ? (currentAuthUser.photoURL || '') : '';
             const shotRecord = {
               id: uniqueId,
               name: name,
               img_url: finalImgUrl,
               time_str: timeString,
-              likes: 1
+              likes: 1,
+              user_id: currentAuthUser ? currentAuthUser.uid : null,
+              user_email: currentAuthUser ? currentAuthUser.email : null,
+              avatar_url: authAvatar || null,
+              created_at: new Date().toISOString()
             };
 
-            // 2. Insert into Supabase DB Table
-            if (supabaseClient) {
-              const { error: dbErr } = await supabaseClient.from('visitor_shots').insert([shotRecord]);
-              if (dbErr) {
-                console.warn('Supabase DB Insert notice:', dbErr);
+            // 2. Insert into Firebase Firestore
+            if (db) {
+              try {
+                await db.collection('visitor_shots').doc(uniqueId).set(shotRecord);
+              } catch (dbErr) {
+                console.warn('Firebase DB Insert notice:', dbErr);
               }
             }
 
@@ -3463,6 +3733,7 @@
             const newShot = {
               id: uniqueId,
               name: name,
+              avatar_url: authAvatar,
               imgData: finalImgUrl,
               fullImg: finalImgUrl,
               time: timeString,
@@ -3511,55 +3782,79 @@
         });
       }
 
-      /* REALTIME SUPABASE CLOUD SYNC */
-      async function fetchSupabaseShots() {
-        if (!supabaseClient) return;
+      /* REALTIME FIREBASE CLOUD SYNC */
+      async function fetchFirebaseShots() {
+        if (!db) {
+          console.warn('Firestore db not ready yet');
+          return;
+        }
         try {
-          const { data, error } = await supabaseClient
-            .from('visitor_shots')
-            .select('*')
-            .order('created_at', { ascending: false });
+          let snapshot;
+          try {
+            // Try with ordering (requires Firestore index)
+            snapshot = await db.collection('visitor_shots')
+              .orderBy('created_at', 'desc')
+              .limit(80)
+              .get();
+          } catch (indexErr) {
+            // Index not ready yet — fetch all and sort client-side
+            console.info('Firestore index not ready, using client-side sort:', indexErr.message);
+            snapshot = await db.collection('visitor_shots').limit(80).get();
+          }
 
-          if (!error && Array.isArray(data)) {
-            const likedSet = getLocalLikedSet();
-            shots = data.map(item => ({
-              id: item.id,
+          const likedSet = getLocalLikedSet();
+          shots = [];
+          snapshot.forEach(doc => {
+            const item = doc.data();
+            shots.push({
+              id: item.id || doc.id,
               name: item.name || 'Visitor',
+              avatar_url: item.avatar_url || '',
               imgData: item.img_url || '',
               fullImg: item.img_url || '',
               time: item.time_str || 'Recently',
               likes: typeof item.likes === 'number' ? item.likes : 0,
-              liked: likedSet.has(item.id)
-            }));
-            saveShots(shots);
-            renderGallery();
-          }
+              liked: likedSet.has(item.id || doc.id),
+              created_at: item.created_at || ''
+            });
+          });
+          // Always sort newest first client-side
+          shots.sort((a, b) => (b.created_at > a.created_at ? 1 : -1));
+          saveShots(shots);
+          renderGallery();
         } catch (e) {
-          console.warn('Offline or sync note:', e);
+          console.error('Firebase fetch error:', e.code, e.message);
         }
       }
 
-      function initSupabaseSync() {
+      function initFirebaseSync() {
         // Initial fetch on load
-        fetchSupabaseShots();
+        fetchFirebaseShots();
 
-        // Realtime Subscription
-        if (supabaseClient) {
+        // Real-time listener using Firestore onSnapshot (fallback to polling)
+        if (db) {
           try {
-            supabaseClient
-              .channel('public_visitor_shots')
-              .on('postgres_changes', { event: '*', schema: 'public', table: 'visitor_shots' }, () => {
-                fetchSupabaseShots();
-              })
-              .subscribe();
+            const trySnapshot = (query) => {
+              query.onSnapshot(() => {
+                fetchFirebaseShots();
+              }, (err) => {
+                console.info('Firestore snapshot fallback (index pending):', err.message);
+                // Fall back to polling if onSnapshot fails
+              });
+            };
+            try {
+              trySnapshot(db.collection('visitor_shots').orderBy('created_at', 'desc').limit(80));
+            } catch (e) {
+              trySnapshot(db.collection('visitor_shots').limit(80));
+            }
           } catch (rtErr) {
             console.warn('Realtime subscription note:', rtErr);
           }
         }
 
         // Background polling every 20 seconds & on tab focus
-        setInterval(fetchSupabaseShots, 20000);
-        window.addEventListener('focus', fetchSupabaseShots);
+        setInterval(fetchFirebaseShots, 20000);
+        window.addEventListener('focus', fetchFirebaseShots);
       }
 
       /* RENDER GALLERY */
@@ -3586,6 +3881,9 @@
           const card = document.createElement('div');
           card.className = 'vs-card';
           const initial = item.name ? item.name.charAt(0).toUpperCase() : 'V';
+          const avatarHtml = item.avatar_url
+            ? `<img class="vs-avatar" src="${item.avatar_url}" alt="${item.name}" style="object-fit:cover;border-radius:50%;width:26px;height:26px;border:1.5px solid rgba(168,85,247,0.6);">`
+            : `<div class="vs-avatar">${initial}</div>`;
 
           const deleteButtonHtml = isAuthAdmin ? `
             <button class="vs-del-btn" data-idx="${idx}" title="Admin Delete Photo" aria-label="Admin Delete Photo">
@@ -3602,7 +3900,7 @@
             </div>
             <div class="vs-card-info">
               <div class="vs-card-artist-wrap">
-                <div class="vs-avatar">${initial}</div>
+                ${avatarHtml}
                 <div class="vs-artist-meta">
                   <span class="vs-card-artist-name">${item.name}</span>
                   <span class="vs-card-time">${item.time}</span>
@@ -3642,15 +3940,11 @@
               saveLocalLikedSet(likedSet);
               renderGallery();
 
-              // Sync like to Supabase
-              if (supabaseClient) {
-                supabaseClient
-                  .from('visitor_shots')
+              // Sync like to Firebase Firestore
+              if (db) {
+                db.collection('visitor_shots').doc(s.id)
                   .update({ likes: s.likes })
-                  .eq('id', s.id)
-                  .then(({ error }) => {
-                    if (error) console.warn('Like sync error:', error);
-                  });
+                  .catch(err => console.warn('Like sync error:', err));
               } else {
                 saveShots(shots);
               }
@@ -3671,15 +3965,11 @@
 
               if (!confirm(`Delete photo by "${target.name}"?`)) return;
 
-              // Supabase Delete
-              if (supabaseClient) {
-                supabaseClient
-                  .from('visitor_shots')
+              // Firebase Firestore Delete
+              if (db) {
+                db.collection('visitor_shots').doc(target.id)
                   .delete()
-                  .eq('id', target.id)
-                  .then(({ error }) => {
-                    if (error) console.warn('Supabase delete error:', error);
-                  });
+                  .catch(err => console.warn('Firebase delete error:', err));
               }
 
               shots.splice(idx, 1);
@@ -3716,7 +4006,8 @@
       }
 
       renderVisitorGallery = renderGallery;
-      initSupabaseSync();
+      initFirebaseSync();
+      initFirebaseAuth();
       updateAdminUI();
     })();
   </script>
