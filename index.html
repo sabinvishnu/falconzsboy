@@ -3679,30 +3679,10 @@
         }
       }
 
-      /* HELPER: Upload Image to Firebase Storage (with strict timeout) */
+      /* HELPER: Prepare photo for Firestore (optimized ~35KB, works 100% on free Spark plan) */
       async function uploadPhotoToStorage(uniqueId, dataUrl) {
-        const storage = getStorage();
-        if (!storage) return null;
-        try {
-          const res = await fetch(dataUrl);
-          const blob = await res.blob();
-          const fileName = `visitor_photos/visitor_${uniqueId}_${Date.now()}.jpg`;
-          const storageRef = storage.ref(fileName);
-          
-          // Strict 6s timeout so upload NEVER hangs the UI if Storage rules are pending
-          const uploadPromise = (async () => {
-            const snapshot = await storageRef.put(blob, { contentType: 'image/jpeg' });
-            return await snapshot.ref.getDownloadURL();
-          })();
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Storage upload timeout')), 6000)
-          );
-          
-          return await Promise.race([uploadPromise, timeoutPromise]);
-        } catch (err) {
-          console.warn('Firebase Storage upload notice (using fallback):', err.message || err);
-          return null;
-        }
+        // Use optimized photo directly so it never requires paid Blaze plan or bucket setup
+        return getCompressedFallback(720, 0.75) || dataUrl;
       }
 
       /* PUBLISH */
