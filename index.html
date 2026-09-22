@@ -2284,6 +2284,11 @@
     <button class="lb-btn" id="lb-next" aria-label="Next">&#8594;</button>
   </div>
 
+  <!-- Firebase Cloud Firestore SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+
   <script>
     /* LOADER */
     (() => {
@@ -3527,8 +3532,28 @@
       }
 
       /* ═════════════════════════════════════════════════════
-         VISITOR SHOTS ENGINE
+         VISITOR SHOTS ENGINE (FIRESTORE POWERED)
          ═════════════════════════════════════════════════════ */
+      const getDb = () => window.firebaseDb || ((typeof firebase !== 'undefined') ? firebase.firestore() : null);
+
+      /* Compress canvas for optimized cloud storage (~35KB) */
+      function getOptimizedPhoto(maxSize = 720, quality = 0.72) {
+        if (!canvas) return null;
+        try {
+          const c = document.createElement('canvas');
+          let w = canvas.width, h = canvas.height;
+          if (w > maxSize || h > maxSize) {
+            if (w > h) { h = Math.round((h * maxSize) / w); w = maxSize; }
+            else { w = Math.round((w * maxSize) / h); h = maxSize; }
+          }
+          c.width = w; c.height = h;
+          const ctx = c.getContext('2d');
+          ctx.drawImage(canvas, 0, 0, w, h);
+          return c.toDataURL('image/jpeg', quality);
+        } catch (e) {
+          return null;
+        }
+      }
 
       /* PUBLISH */
       if (publishBtn) {
@@ -3545,7 +3570,7 @@
           if (!canvas || !rawImageObj) return;
 
           renderWatermark();
-          const finalDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          const finalDataUrl = getOptimizedPhoto(720, 0.74) || canvas.toDataURL('image/jpeg', 0.82);
 
           const timeString = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
           const uniqueId = 'vs_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
@@ -3555,6 +3580,28 @@
           publishBtn.textContent = 'Publishing...';
 
           try {
+            const shotRecord = {
+              id: uniqueId,
+              name: name,
+              img_url: finalDataUrl,
+              time_str: timeString,
+              likes: 1,
+              created_at: new Date().toISOString()
+            };
+
+            // 1. Save to Cloud Firestore
+            const db = getDb();
+            if (db) {
+              try {
+                const savePromise = db.collection('visitor_shots').doc(uniqueId).set(shotRecord);
+                const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Firestore timeout')), 6000));
+                await Promise.race([savePromise, timeout]);
+              } catch (dbErr) {
+                console.warn('Firestore publish notice:', dbErr.message || dbErr);
+              }
+            }
+
+            // 2. Immediate local optimistic display
             const likedSet = getLocalLikedSet();
             likedSet.add(uniqueId);
             saveLocalLikedSet(likedSet);
@@ -3567,7 +3614,7 @@
               time: timeString,
               likes: 1,
               liked: true,
-              created_at: new Date().toISOString()
+              created_at: shotRecord.created_at
             };
 
             shots = shots.filter(s => s.id !== uniqueId);
@@ -3601,6 +3648,56 @@
         });
       }
 
+      /* REALTIME FIRESTORE SYNC */
+      async function fetchFirestoreShots() {
+        const db = getDb();
+        if (!db) return;
+        try {
+          let snapshot;
+          try {
+            snapshot = await db.collection('visitor_shots').orderBy('created_at', 'desc').limit(80).get();
+          } catch (e) {
+            snapshot = await db.collection('visitor_shots').limit(80).get();
+          }
+          const likedSet = getLocalLikedSet();
+          shots = [];
+          snapshot.forEach(doc => {
+            const item = doc.data();
+            shots.push({
+              id: item.id || doc.id,
+              name: item.name || 'Visitor',
+              imgData: item.img_url || '',
+              fullImg: item.img_url || '',
+              time: item.time_str || 'Recently',
+              likes: typeof item.likes === 'number' ? item.likes : 0,
+              liked: likedSet.has(item.id || doc.id),
+              created_at: item.created_at || ''
+            });
+          });
+          shots.sort((a, b) => (b.created_at > a.created_at ? 1 : -1));
+          saveShots(shots);
+          renderGallery();
+        } catch (err) {
+          console.warn('Firestore fetch notice:', err.message || err);
+        }
+      }
+
+      function initFirestoreSync() {
+        fetchFirestoreShots();
+        const db = getDb();
+        if (db) {
+          try {
+            db.collection('visitor_shots').onSnapshot(() => {
+              fetchFirestoreShots();
+            }, (err) => {
+              console.info('Firestore live sync fallback:', err.message);
+            });
+          } catch (e) {}
+        }
+        setInterval(fetchFirestoreShots, 20000);
+        window.addEventListener('focus', fetchFirestoreShots);
+      }
+
       /* RENDER GALLERY */
       function renderGallery() {
         if (!vsGrid) return;
@@ -3625,9 +3722,7 @@
           const card = document.createElement('div');
           card.className = 'vs-card';
           const initial = item.name ? item.name.charAt(0).toUpperCase() : 'V';
-          const avatarHtml = item.avatar_url
-            ? `<img class="vs-avatar" src="${item.avatar_url}" alt="${item.name}" style="object-fit:cover;border-radius:50%;width:26px;height:26px;border:1.5px solid rgba(168,85,247,0.6);">`
-            : `<div class="vs-avatar">${initial}</div>`;
+          const avatarHtml = `<div class="vs-avatar">${initial}</div>`;
 
           const deleteButtonHtml = isAuthAdmin ? `
             <button class="vs-del-btn" data-idx="${idx}" title="Admin Delete Photo" aria-label="Admin Delete Photo">
@@ -3684,6 +3779,13 @@
               saveLocalLikedSet(likedSet);
               renderGallery();
 
+              // Sync like to Firestore
+              const db = getDb();
+              if (db) {
+                db.collection('visitor_shots').doc(s.id)
+                  .update({ likes: s.likes })
+                  .catch(() => {});
+              }
               saveShots(shots);
             });
           }
@@ -3701,6 +3803,14 @@
               if (!target) return;
 
               if (!confirm(`Delete photo by "${target.name}"?`)) return;
+
+              // Delete from Firestore
+              const db = getDb();
+              if (db) {
+                db.collection('visitor_shots').doc(target.id)
+                  .delete()
+                  .catch(() => {});
+              }
 
               shots.splice(idx, 1);
               saveShots(shots);
@@ -3737,6 +3847,7 @@
 
       renderVisitorGallery = renderGallery;
       renderGallery();
+      initFirestoreSync();
       updateAdminUI();
     })();
   </script>
