@@ -3655,24 +3655,54 @@
       /* ═════════════════════════════════════════════════════
          FIREBASE CLIENT REFERENCE
          ═════════════════════════════════════════════════════ */
-      const db = window.fbDb || window.firebaseDb || null;
-      const fbStorage = window.fbStorage || ((typeof firebase !== 'undefined') ? firebase.storage() : null);
+      const getDb = () => window.firebaseDb || window.fbDb || ((typeof firebase !== 'undefined') ? firebase.firestore() : null);
+      const getStorage = () => window.firebaseStorage || window.fbStorage || ((typeof firebase !== 'undefined') ? firebase.storage() : null);
 
-      /* HELPER: Upload Image to Firebase Storage or return DataURL */
+      /* Compress canvas for fallback dataUrl if Storage upload fails */
+      function getCompressedFallback(maxSize = 720, quality = 0.72) {
+        if (!canvas) return null;
+        try {
+          const c = document.createElement('canvas');
+          let w = canvas.width;
+          let h = canvas.height;
+          if (w > maxSize || h > maxSize) {
+            if (w > h) { h = Math.round((h * maxSize) / w); w = maxSize; }
+            else { w = Math.round((w * maxSize) / h); h = maxSize; }
+          }
+          c.width = w;
+          c.height = h;
+          const ctx = c.getContext('2d');
+          ctx.drawImage(canvas, 0, 0, w, h);
+          return c.toDataURL('image/jpeg', quality);
+        } catch (e) {
+          return null;
+        }
+      }
+
+      /* HELPER: Upload Image to Firebase Storage (with strict timeout) */
       async function uploadPhotoToStorage(uniqueId, dataUrl) {
-        if (!fbStorage) return dataUrl;
+        const storage = getStorage();
+        if (!storage) return null;
         try {
           const res = await fetch(dataUrl);
           const blob = await res.blob();
           const fileName = `visitor_photos/visitor_${uniqueId}_${Date.now()}.jpg`;
-          const storageRef = fbStorage.ref(fileName);
-          const snapshot = await storageRef.put(blob, { contentType: 'image/jpeg' });
-          const publicUrl = await snapshot.ref.getDownloadURL();
-          return publicUrl;
+          const storageRef = storage.ref(fileName);
+          
+          // Strict 6s timeout so upload NEVER hangs the UI if Storage rules are pending
+          const uploadPromise = (async () => {
+            const snapshot = await storageRef.put(blob, { contentType: 'image/jpeg' });
+            return await snapshot.ref.getDownloadURL();
+          })();
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Storage upload timeout')), 6000)
+          );
+          
+          return await Promise.race([uploadPromise, timeoutPromise]);
         } catch (err) {
-          console.warn('Firebase Storage upload error, using direct image data:', err);
+          console.warn('Firebase Storage upload notice (using fallback):', err.message || err);
+          return null;
         }
-        return dataUrl;
       }
 
       /* PUBLISH */
@@ -3700,8 +3730,12 @@
           publishBtn.textContent = 'Publishing...';
 
           try {
-            // 1. Upload photo to Firebase Storage (or get public URL / optimized data)
-            const finalImgUrl = await uploadPhotoToStorage(uniqueId, finalDataUrl);
+            // 1. Upload photo to Firebase Storage (or get public URL)
+            let finalImgUrl = await uploadPhotoToStorage(uniqueId, finalDataUrl);
+            if (!finalImgUrl) {
+              // Fall back to compressed image data if storage is blocked/pending
+              finalImgUrl = getCompressedFallback(680, 0.70) || finalDataUrl;
+            }
 
             const authAvatar = currentAuthUser ? (currentAuthUser.photoURL || '') : '';
             const shotRecord = {
@@ -3716,12 +3750,17 @@
               created_at: new Date().toISOString()
             };
 
-            // 2. Insert into Firebase Firestore
-            if (db) {
+            // 2. Insert into Firebase Firestore with 6s timeout
+            const currentDb = getDb();
+            if (currentDb) {
               try {
-                await db.collection('visitor_shots').doc(uniqueId).set(shotRecord);
+                const dbPromise = currentDb.collection('visitor_shots').doc(uniqueId).set(shotRecord);
+                const dbTimeout = new Promise((_, reject) =>
+                  setTimeout(() => reject(new Error('Firestore insert timeout')), 6000)
+                );
+                await Promise.race([dbPromise, dbTimeout]);
               } catch (dbErr) {
-                console.warn('Firebase DB Insert notice:', dbErr);
+                console.warn('Firebase DB Insert notice:', dbErr.message || dbErr);
               }
             }
 
@@ -3738,24 +3777,45 @@
               fullImg: finalImgUrl,
               time: timeString,
               likes: 1,
-              liked: true
+              liked: true,
+              created_at: shotRecord.created_at
             };
 
             shots = shots.filter(s => s.id !== uniqueId);
             shots.unshift(newShot);
             saveShots(shots);
             renderGallery();
+
+            // Clear preview
+            rawImageObj = null;
+            if (fileInput) fileInput.value = '';
+            if (nativeCamInput) nativeCamInput.value = '';
+            if (previewBox) previewBox.style.display = 'none';
+
+            publishBtn.textContent = 'Published! ✓';
+            setTimeout(() => {
+              publishBtn.disabled = false;
+              publishBtn.textContent = origText;
+            }, 1200);
+
+            if (vsGrid) {
+              const firstCard = vsGrid.querySelector('.vs-card');
+              if (firstCard) {
+                setTimeout(() => firstCard.scrollIntoView({ behavior: 'smooth', block: 'center' }), 250);
+              }
+            }
           } catch (err) {
             console.error('Publish error:', err);
             const likedSet = getLocalLikedSet();
             likedSet.add(uniqueId);
             saveLocalLikedSet(likedSet);
 
+            const fallbackImg = getCompressedFallback(680, 0.70) || finalDataUrl;
             const newShot = {
               id: uniqueId,
               name: name,
-              imgData: finalDataUrl,
-              fullImg: finalDataUrl,
+              imgData: fallbackImg,
+              fullImg: fallbackImg,
               time: timeString,
               likes: 1,
               liked: true
@@ -3763,27 +3823,28 @@
             shots.unshift(newShot);
             saveShots(shots);
             renderGallery();
-          } finally {
+
+            rawImageObj = null;
+            if (fileInput) fileInput.value = '';
+            if (nativeCamInput) nativeCamInput.value = '';
+            if (previewBox) previewBox.style.display = 'none';
+
             publishBtn.disabled = false;
             publishBtn.textContent = origText;
-          }
-
-          rawImageObj = null;
-          if (fileInput) fileInput.value = '';
-          if (nativeCamInput) nativeCamInput.value = '';
-          if (previewBox) previewBox.style.display = 'none';
-
-          if (vsGrid) {
-            const firstCard = vsGrid.querySelector('.vs-card');
-            if (firstCard) {
-              setTimeout(() => firstCard.scrollIntoView({ behavior: 'smooth', block: 'center' }), 250);
-            }
+          } finally {
+            setTimeout(() => {
+              if (publishBtn.disabled) {
+                publishBtn.disabled = false;
+                publishBtn.textContent = origText;
+              }
+            }, 1500);
           }
         });
       }
 
       /* REALTIME FIREBASE CLOUD SYNC */
       async function fetchFirebaseShots() {
+        const db = getDb();
         if (!db) {
           console.warn('Firestore db not ready yet');
           return;
@@ -3832,6 +3893,7 @@
         fetchFirebaseShots();
 
         // Real-time listener using Firestore onSnapshot (fallback to polling)
+        const db = getDb();
         if (db) {
           try {
             const trySnapshot = (query) => {
@@ -3941,8 +4003,9 @@
               renderGallery();
 
               // Sync like to Firebase Firestore
-              if (db) {
-                db.collection('visitor_shots').doc(s.id)
+              const currentDb = getDb();
+              if (currentDb) {
+                currentDb.collection('visitor_shots').doc(s.id)
                   .update({ likes: s.likes })
                   .catch(err => console.warn('Like sync error:', err));
               } else {
@@ -3966,8 +4029,9 @@
               if (!confirm(`Delete photo by "${target.name}"?`)) return;
 
               // Firebase Firestore Delete
-              if (db) {
-                db.collection('visitor_shots').doc(target.id)
+              const currentDb = getDb();
+              if (currentDb) {
+                currentDb.collection('visitor_shots').doc(target.id)
                   .delete()
                   .catch(err => console.warn('Firebase delete error:', err));
               }
